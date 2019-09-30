@@ -1,0 +1,19 @@
+(library
+  (name AppLib)
+  (libraries
+    bigarray
+    Revery
+  )
+  (modules :standard \ App)
+)
+(executable
+  (package App)
+  (name App)
+  (public_name App)
+  (libraries
+    AppLib
+    Revery
+  )
+  (modules App)
+)
+(include_subdirs unqualified)

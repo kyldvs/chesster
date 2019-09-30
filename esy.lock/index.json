@@ -1,5 +1,5 @@
 {
-  "checksum": "a19a82e301dddb39f9ddd14edccf125b",
+  "checksum": "f782a5b69323682d9fe68c06b21349d6",
   "root": "revery-quick-start@link-dev:./package.json",
   "node": {
     "revery-quick-start@link-dev:./package.json": {
@@ -14,6 +14,7 @@
       "overrides": [],
       "dependencies": [
         "revery@0.27.0@d41d8cd9", "ocaml@4.7.1004@d41d8cd9",
+        "@reason-native/rely@3.1.0@d41d8cd9",
         "@opam/dune@opam:1.7.3@e23fe0a7"
       ],
       "devDependencies": [
