@@ -1,17 +1,17 @@
 (library
-  (name TestLib)
+  (name Tests)
   (ocamlopt_flags -linkall -g)
   (libraries
-    AppLib
+    App
     rely.lib
   )
-  (modules :standard \ Test)
+  (modules :standard \ TestExe)
 )
 (executable
-  (package App)
-  (name Test)
-  (public_name Test)
-  (libraries TestLib)
-  (modules Test)
+  (package AppExe)
+  (name TestExe)
+  (public_name TestExe)
+  (libraries Tests)
+  (modules TestExe)
 )
 (include_subdirs unqualified)

@@ -1,19 +1,19 @@
 (library
-  (name AppLib)
+  (name App)
   (libraries
     bigarray
     Revery
   )
-  (modules :standard \ App)
+  (modules :standard \ AppExe)
 )
 (executable
-  (package App)
-  (name App)
-  (public_name App)
+  (package AppExe)
+  (name AppExe)
+  (public_name AppExe)
   (libraries
-    AppLib
+    App
     Revery
   )
-  (modules App)
+  (modules AppExe)
 )
 (include_subdirs unqualified)

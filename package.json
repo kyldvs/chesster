@@ -4,7 +4,7 @@
   "description": "Chesster",
   "license": "MIT",
   "esy": {
-    "build": "refmterr dune build -p App",
+    "build": "refmterr dune build -p AppExe",
     "buildsInSource": "_build",
     "buildEnv": { "ODOC_SYNTAX": "re" }
   },
@@ -12,7 +12,7 @@
     "bundleName": "ExampleApp",
     "bundleId": "com.example.app",
     "displayName": "Revery Example App",
-    "mainExecutable": "App",
+    "mainExecutable": "AppExe",
     "windows": { "packages": [ "zip" ], "iconFile": "assets/icon.ico" },
     "darwin": {
       "packages": [ "tar", "dmg" ],
@@ -39,8 +39,8 @@
   },
   "scripts": {
     "format": "./scripts/format",
-    "run": "esy x App",
-    "test": "esy x Test --onlyPrintDetailsForFailedSuites"
+    "run": "esy x AppExe",
+    "test": "esy x TestExe --onlyPrintDetailsForFailedSuites"
   },
   "devDependencies": {
     "ocaml": "~4.7.0",
