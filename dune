@@ -7,3 +7,4 @@
     Revery
   )
 )
+(include_subdirs unqualified)
