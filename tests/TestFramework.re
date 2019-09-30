@@ -1,11 +1,5 @@
 let projectDir =
-  Filename.(
-    Sys.executable_name
-    |> dirname
-    |> dirname
-    |> dirname
-    |> dirname
-  );
+  Filename.(Sys.executable_name |> dirname |> dirname |> dirname |> dirname);
 
 include Rely.Make({
   let config =

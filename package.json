@@ -38,9 +38,9 @@
     "@opam/merlin-extend": "0.4"
   },
   "scripts": {
-    "format": "bash -c \"refmt --in-place *.re\"",
+    "format": "./scripts/format",
     "run": "esy x App",
-    "test": "esy x Test"
+    "test": "esy x Test --onlyPrintDetailsForFailedSuites"
   },
   "devDependencies": {
     "ocaml": "~4.7.0",
