@@ -10,8 +10,6 @@ let projectDir =
     |> dirname
   );
 
-print_endline(projectDir);
-
 include Rely.Make({
   let config =
     Rely.TestFrameworkConfig.initialize({
