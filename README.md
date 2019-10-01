@@ -1,6 +1,8 @@
 # Chesster
 A chess app written in Reason ♟️♟️♟️
 
+![IProgress](./docs/progress-2019-09-30.png)
+
 # Development
 
 ## Primary commands
