@@ -5,13 +5,14 @@ open Revery.UI.Components;
 
 let textStyle =
   Style.[
-    color(Colors.white),
+    color(Color.hex("#222222")),
     fontFamily("Roboto-Regular.ttf"),
     fontSize(24),
   ];
 
 let containerStyle =
   Style.[
+    backgroundColor(Color.hex("#dddddd")),
     position(`Absolute),
     justifyContent(`Center),
     alignItems(`Center),

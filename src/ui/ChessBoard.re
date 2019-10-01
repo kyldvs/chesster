@@ -2,15 +2,18 @@ open Revery;
 open Revery.UI;
 open Revery.UI.Components;
 
+let black = Color.hex("#AE734B");
+let white = Color.hex("#F1D0A1");
+
 module Black = {
   let createElement = (~children, _) => {
-    <Container height=64 width=64 color=Colors.black />;
+    <Container height=64 width=64 color=black />;
   };
 };
 
 module White = {
   let createElement = (~children, _) => {
-    <Container height=64 width=64 color=Colors.white />;
+    <Container height=64 width=64 color=white />;
   };
 };
 
