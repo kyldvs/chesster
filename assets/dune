@@ -1,5 +1,7 @@
 (install
   (section bin)
   (package AppExe)
-  (files Roboto-Regular.ttf)
+  (files
+    Roboto-Regular.ttf
+  )
 )

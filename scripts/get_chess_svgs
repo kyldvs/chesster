@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# Super hacky bash-fu. Basically the file is under some arbitrary two letter directories.
+# Can't just get the file based on name, so I parse the website for a name that looks like
+# the correct location of the svg I want.
+function get_svg() {
+  echo "Getting $1"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_${1}45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs echo wget -O "${1}.svg"
+}
+
+# Files are from: https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+# See table for what the letters mean.
+
+# I don't know why this isn't working as a script, just copy the commands and paste in terminal.
+function copy_these() {
+  get_svg "kdt"
+  get_svg "qdt"
+  get_svg "rdt"
+  get_svg "bdt"
+  get_svg "ndt"
+  get_svg "pdt"
+  get_svg "fdt"
+  get_svg "gdt"
+  get_svg "mdt"
+  get_svg "edt"
+  get_svg "sdt"
+  get_svg "hdt"
+  get_svg "klt"
+  get_svg "qlt"
+  get_svg "rlt"
+  get_svg "blt"
+  get_svg "nlt"
+  get_svg "plt"
+  get_svg "flt"
+  get_svg "glt"
+  get_svg "mlt"
+  get_svg "elt"
+  # get_svg "slt"
+  get_svg "hlt"
+
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_kdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "kdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_qdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "qdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_rdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "rdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_bdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "bdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_ndt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "ndt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_pdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "pdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_fdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "fdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_gdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "gdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_mdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "mdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_edt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "edt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_sdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "sdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_hdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "hdt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_klt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "klt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_qlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "qlt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_rlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "rlt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_blt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "blt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_nlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "nlt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_plt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "plt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_flt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "flt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_glt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "glt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_mlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "mlt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_elt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "elt.svg"
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_hlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "hlt.svg"
+
+  # wget -O - "https://commons.wikimedia.org/wiki/File:Chess_slt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs echo wget -O "slt.svg"
+}
