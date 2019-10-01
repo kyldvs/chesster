@@ -64,5 +64,6 @@ function copy_these() {
   wget -O - "https://commons.wikimedia.org/wiki/File:Chess_elt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "elt.svg"
   wget -O - "https://commons.wikimedia.org/wiki/File:Chess_hlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "hlt.svg"
 
-  # wget -O - "https://commons.wikimedia.org/wiki/File:Chess_slt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs echo wget -O "slt.svg"
+  # different for some reason?
+  wget -O - "https://commons.wikimedia.org/wiki/File:Chess_Nlt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs echo wget -O "slt.svg"
 }
