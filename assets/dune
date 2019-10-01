@@ -3,29 +3,29 @@
   (package AppExe)
   (files
     Roboto-Regular.ttf
-    kdt.svg
-    qdt.svg
-    rdt.svg
-    bdt.svg
-    ndt.svg
-    pdt.svg
-    fdt.svg
-    gdt.svg
-    mdt.svg
-    edt.svg
-    sdt.svg
-    hdt.svg
-    klt.svg
-    qlt.svg
-    rlt.svg
-    blt.svg
-    nlt.svg
-    plt.svg
-    flt.svg
-    glt.svg
-    mlt.svg
-    elt.svg
-    slt.svg
-    hlt.svg
+    kdt.svg.png
+    qdt.svg.png
+    rdt.svg.png
+    bdt.svg.png
+    ndt.svg.png
+    pdt.svg.png
+    fdt.svg.png
+    gdt.svg.png
+    mdt.svg.png
+    edt.svg.png
+    sdt.svg.png
+    hdt.svg.png
+    klt.svg.png
+    qlt.svg.png
+    rlt.svg.png
+    blt.svg.png
+    nlt.svg.png
+    plt.svg.png
+    flt.svg.png
+    glt.svg.png
+    mlt.svg.png
+    elt.svg.png
+    slt.svg.png
+    hlt.svg.png
   )
 )

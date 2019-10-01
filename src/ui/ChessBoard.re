@@ -14,22 +14,32 @@ let boxShadow =
     (),
   );
 
+let pieceStyle = Style.[width(64), height(64)];
+
+let centered = Style.[justifyContent(`Center), alignItems(`Center)];
+
+module BlackKing = {
+  let createElement = (~children, _) => {
+    <View style=centered> <Image src="kdt.svg.png" style=pieceStyle /> </View>;
+  };
+};
+
 module Black = {
   let createElement = (~children, _) => {
-    <Container height=64 width=64 color=black />;
+    <Container height=64 width=64 color=black> ...children </Container>;
   };
 };
 
 module White = {
   let createElement = (~children, _) => {
-    <Container height=64 width=64 color=white />;
+    <Container height=64 width=64 color=white> ...children </Container>;
   };
 };
 
 module BlackRow = {
   let createElement = (~children, _) => {
     <Row>
-      <Black />
+      <Black> <BlackKing /> </Black>
       <White />
       <Black />
       <White />

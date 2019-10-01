@@ -1,0 +1,1 @@
+find . -type f -name "*.svg" -exec bash -c 'rsvg-convert -h 256 {} > {}.png' \;
