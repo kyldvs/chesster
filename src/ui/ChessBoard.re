@@ -21,6 +21,7 @@ module Square = {
     | WhiteRook => "rlt.svg.png"
     | WhiteQueen => "qlt.svg.png"
     | WhiteKing => "klt.svg.png"
+    | NoPiece => ""
     };
   };
 
@@ -31,18 +32,17 @@ module Square = {
 
   let centered = Style.[justifyContent(`Center), alignItems(`Center)];
 
-  let createElement =
-      (~square, ~piece: option(piece), ~children: list(unit), _) => {
+  let createElement = (~square, ~piece: piece, ~children: list(unit), _) => {
     let color = isDark(square) ? black : white;
 
     let children =
       switch (piece) {
-      | Some(piece) =>
+      | NoPiece => []
+      | _ =>
         let src = getSrc(piece);
         let view =
           <View style=centered> <Image style=pieceStyle src /> </View>;
         [view];
-      | None => []
       };
 
     <Container height=64 width=64 color> ...children </Container>;
