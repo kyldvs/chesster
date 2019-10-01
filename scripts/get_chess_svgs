@@ -37,7 +37,7 @@ function copy_these() {
   get_svg "glt"
   get_svg "mlt"
   get_svg "elt"
-  # get_svg "slt"
+  get_svg "slt"
   get_svg "hlt"
 
   wget -O - "https://commons.wikimedia.org/wiki/File:Chess_kdt45.svg" > /dev/null 2>&1 | grep -e "\"https://.*45.svg\"" | head -2 | tail -1 | perl -pe 's|.*?href="https://upload.wikimedia.org/||' | perl -pe 's|">.*||' | perl -pe 's|wikipedia|https://upload.wikimedia.org/wikipedia|' | xargs wget -O "kdt.svg"
