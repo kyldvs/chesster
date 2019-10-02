@@ -1,0 +1,86 @@
+open Revery;
+open Revery.Math;
+open Revery.UI;
+open Revery.UI.Components;
+
+let id = ref(1);
+let mouseX = ref(0.);
+let mouseY = ref(0.);
+let didInit = ref(false);
+let dispatch: ref(option(int => unit)) = ref(None);
+let current: ref(option(React.syntheticElement)) = ref(None);
+
+let refresh = () => {
+  switch (dispatch.contents) {
+  | Some(dispatch) =>
+    incr(id);
+    let _ = dispatch(id.contents);
+    ();
+  | None => ()
+  };
+};
+
+let registerDispatch = fn =>
+  if (dispatch.contents == None) {
+    dispatch.contents = Some(fn);
+  };
+
+let startDragging = view => {
+  current.contents = Some(view);
+  refresh();
+};
+
+let stopDragging = () => {
+  current.contents = None;
+  refresh();
+};
+
+let init = () => {
+  ();
+  Revery.Log.info("x", "init");
+  if (!didInit.contents) {
+    didInit := true;
+    id := 1;
+    mouseX := 0.;
+    mouseY := 0.;
+    let onMouseMove = (mouse: NodeEvents.mouseMoveEventParams) => {
+      mouseX := mouse.mouseX;
+      mouseY := mouse.mouseY;
+      refresh();
+    };
+    let onMouseUp = _ => {
+      stopDragging();
+    };
+    Revery.UI.Mouse.setCapture(~onMouseMove, ~onMouseUp, ());
+  };
+};
+
+module Render = {
+  let component = React.component("DragRender");
+
+  let initialState = 0;
+  let reducer = (action, _) => action;
+
+  let createElement = (~children, _) => {
+    component(hooks => {
+      let (state, dispatch, hooks) =
+        Hooks.reducer(~initialState, reducer, hooks);
+
+      registerDispatch(dispatch);
+
+      let xRounded = int_of_float(mouseX.contents);
+      let yRounded = int_of_float(mouseY.contents);
+
+      let style =
+        Style.[position(`Absolute), top(yRounded), left(xRounded)];
+
+      let view =
+        switch (current.contents) {
+        | Some(current) => [current]
+        | None => []
+        };
+
+      (hooks, <View style> ...view </View>);
+    });
+  };
+};

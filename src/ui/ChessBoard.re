@@ -33,6 +33,7 @@ module Square = {
   let pieceStyle = Style.[width(64), height(64)];
 
   let centered = Style.[justifyContent(`Center), alignItems(`Center)];
+  let dragStyle = Style.[position(`Relative), top(-32), left(-32)];
 
   let createElement = (~square, ~piece: piece, ~children: list(unit), _) => {
     let color = isDark(square) ? black : white;
@@ -42,8 +43,10 @@ module Square = {
       | NoPiece => []
       | _ =>
         let src = getSrc(piece);
-        let view =
-          <View style=centered> <Image style=pieceStyle src /> </View>;
+        let image = <Image style=pieceStyle src />;
+        let forDragging = <View style=dragStyle> image </View>;
+        let onMouseDown = _ => Drag.startDragging(forDragging);
+        let view = <View style=centered onMouseDown> image </View>;
         [view];
       };
 

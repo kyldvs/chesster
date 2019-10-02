@@ -91,7 +91,7 @@ type move = (square, square);
 type rf = (int, int);
 
 type position = {
-  /* 1D Arrays are for nerds. */
+  /* 2D Arrays are for nerds. */
   a1: piece,
   a2: piece,
   a3: piece,

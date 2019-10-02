@@ -26,13 +26,14 @@ let innerStyle = Style.[flexDirection(`Row), alignItems(`FlexEnd)];
 
 let createElement = (~children: list(unit), _) => {
   let element =
-    <View style=containerStyle>
-      <View style=innerStyle>
-        <Padding padding=8>
-          <Text style=textStyle text="Hello world!" />
-        </Padding>
-      </View>
-      <ChessBoard position=ChessPositions.start />
-    </View>;
+      <View style=containerStyle>
+        <View style=innerStyle>
+          <Padding padding=8>
+            <Text style=textStyle text="Hello world!" />
+          </Padding>
+        </View>
+        <ChessBoard position=ChessPositions.start />
+        <Drag.Render />
+      </View>;
   element;
 };
