@@ -1,3 +1,4 @@
+open Chess;
 open ChessTypes;
 
 open Revery;

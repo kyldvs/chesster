@@ -1,5 +1,6 @@
 (library
   (name App)
+  (wrapped false)
   (libraries
     bigarray
     Revery
