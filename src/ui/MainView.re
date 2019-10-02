@@ -32,7 +32,7 @@ let createElement = (~children: list(unit), _) => {
           <Text style=textStyle text="Hello world!" />
         </Padding>
       </View>
-      <ChessBoard position=Chess.start />
+      <ChessBoard position=ChessPositions.start />
     </View>;
   element;
 };
