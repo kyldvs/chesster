@@ -24,16 +24,38 @@ let containerStyle =
 
 let innerStyle = Style.[flexDirection(`Row), alignItems(`FlexEnd)];
 
+module MouseEnter = {
+  let component = React.component("MouseEnter");
+  let initialState = ();
+  let reducer = (_, _) => ();
+  let createElement = (~children, _) =>
+    component(hooks => {
+      let (state, dispatch, hooks) =
+        Hooks.reducer(~initialState, reducer, hooks);
+      let onMouseOver = _ => {
+        Revery.Log.info("MouseEnter", "test");
+      };
+
+      let element =
+        <View onMouseOver>
+          <Container height=50 width=512 color=Colors.red />
+        </View>;
+      (hooks, element);
+    });
+};
+
 let createElement = (~children: list(unit), _) => {
   let element =
-      <View style=containerStyle>
-        <View style=innerStyle>
-          <Padding padding=8>
-            <Text style=textStyle text="Hello world!" />
-          </Padding>
-        </View>
-        <ChessBoard position=ChessPositions.start />
-        <Drag.Render />
-      </View>;
+    <View style=containerStyle>
+      <MouseEnter />
+      <View style=innerStyle>
+        <Padding padding=8>
+          <Text style=textStyle text="Hello world!" />
+        </Padding>
+      </View>
+      <ChessBoard />
+      <Drag.Render />
+    </View>;
+
   element;
 };

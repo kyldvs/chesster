@@ -1,5 +1,143 @@
 open ChessTypes;
 
+let getPiece = (square, position) => {
+  switch (square) {
+  | A1 => position.a1
+  | A2 => position.a2
+  | A3 => position.a3
+  | A4 => position.a4
+  | A5 => position.a5
+  | A6 => position.a6
+  | A7 => position.a7
+  | A8 => position.a8
+  | B1 => position.b1
+  | B2 => position.b2
+  | B3 => position.b3
+  | B4 => position.b4
+  | B5 => position.b5
+  | B6 => position.b6
+  | B7 => position.b7
+  | B8 => position.b8
+  | C1 => position.c1
+  | C2 => position.c2
+  | C3 => position.c3
+  | C4 => position.c4
+  | C5 => position.c5
+  | C6 => position.c6
+  | C7 => position.c7
+  | C8 => position.c8
+  | D1 => position.d1
+  | D2 => position.d2
+  | D3 => position.d3
+  | D4 => position.d4
+  | D5 => position.d5
+  | D6 => position.d6
+  | D7 => position.d7
+  | D8 => position.d8
+  | E1 => position.e1
+  | E2 => position.e2
+  | E3 => position.e3
+  | E4 => position.e4
+  | E5 => position.e5
+  | E6 => position.e6
+  | E7 => position.e7
+  | E8 => position.e8
+  | F1 => position.f1
+  | F2 => position.f2
+  | F3 => position.f3
+  | F4 => position.f4
+  | F5 => position.f5
+  | F6 => position.f6
+  | F7 => position.f7
+  | F8 => position.f8
+  | G1 => position.g1
+  | G2 => position.g2
+  | G3 => position.g3
+  | G4 => position.g4
+  | G5 => position.g5
+  | G6 => position.g6
+  | G7 => position.g7
+  | G8 => position.g8
+  | H1 => position.h1
+  | H2 => position.h2
+  | H3 => position.h3
+  | H4 => position.h4
+  | H5 => position.h5
+  | H6 => position.h6
+  | H7 => position.h7
+  | H8 => position.h8
+  };
+};
+
+let setPiece = (square, piece, position) => {
+  switch (square) {
+  | A1 => {...position, a1: piece}
+  | A2 => {...position, a2: piece}
+  | A3 => {...position, a3: piece}
+  | A4 => {...position, a4: piece}
+  | A5 => {...position, a5: piece}
+  | A6 => {...position, a6: piece}
+  | A7 => {...position, a7: piece}
+  | A8 => {...position, a8: piece}
+  | B1 => {...position, b1: piece}
+  | B2 => {...position, b2: piece}
+  | B3 => {...position, b3: piece}
+  | B4 => {...position, b4: piece}
+  | B5 => {...position, b5: piece}
+  | B6 => {...position, b6: piece}
+  | B7 => {...position, b7: piece}
+  | B8 => {...position, b8: piece}
+  | C1 => {...position, c1: piece}
+  | C2 => {...position, c2: piece}
+  | C3 => {...position, c3: piece}
+  | C4 => {...position, c4: piece}
+  | C5 => {...position, c5: piece}
+  | C6 => {...position, c6: piece}
+  | C7 => {...position, c7: piece}
+  | C8 => {...position, c8: piece}
+  | D1 => {...position, d1: piece}
+  | D2 => {...position, d2: piece}
+  | D3 => {...position, d3: piece}
+  | D4 => {...position, d4: piece}
+  | D5 => {...position, d5: piece}
+  | D6 => {...position, d6: piece}
+  | D7 => {...position, d7: piece}
+  | D8 => {...position, d8: piece}
+  | E1 => {...position, e1: piece}
+  | E2 => {...position, e2: piece}
+  | E3 => {...position, e3: piece}
+  | E4 => {...position, e4: piece}
+  | E5 => {...position, e5: piece}
+  | E6 => {...position, e6: piece}
+  | E7 => {...position, e7: piece}
+  | E8 => {...position, e8: piece}
+  | F1 => {...position, f1: piece}
+  | F2 => {...position, f2: piece}
+  | F3 => {...position, f3: piece}
+  | F4 => {...position, f4: piece}
+  | F5 => {...position, f5: piece}
+  | F6 => {...position, f6: piece}
+  | F7 => {...position, f7: piece}
+  | F8 => {...position, f8: piece}
+  | G1 => {...position, g1: piece}
+  | G2 => {...position, g2: piece}
+  | G3 => {...position, g3: piece}
+  | G4 => {...position, g4: piece}
+  | G5 => {...position, g5: piece}
+  | G6 => {...position, g6: piece}
+  | G7 => {...position, g7: piece}
+  | G8 => {...position, g8: piece}
+  | H1 => {...position, h1: piece}
+  | H2 => {...position, h2: piece}
+  | H3 => {...position, h3: piece}
+  | H4 => {...position, h4: piece}
+  | H5 => {...position, h5: piece}
+  | H6 => {...position, h6: piece}
+  | H7 => {...position, h7: piece}
+  | H8 => {...position, h8: piece}
+  };
+};
+
 let squareToRankAndFile = square => {
   switch (square) {
   | A1 => (0, 0)

@@ -9,6 +9,7 @@ let mouseY = ref(0.);
 let didInit = ref(false);
 let dispatch: ref(option(int => unit)) = ref(None);
 let current: ref(option(React.syntheticElement)) = ref(None);
+let onStop: ref(option(unit => unit)) = ref(None);
 
 let refresh = () => {
   switch (dispatch.contents) {
@@ -25,33 +26,43 @@ let registerDispatch = fn =>
     dispatch.contents = Some(fn);
   };
 
-let startDragging = view => {
-  current.contents = Some(view);
+let stopDragging = () => {
+  current.contents = None;
+  let toCall = onStop.contents;
+  onStop.contents = None;
+  refresh();
+  /* Do this after the refresh. */
+  switch (toCall) {
+  | Some(toCall) => toCall()
+  | None => ()
+  };
+};
+
+let onMouseMove = (mouse: NodeEvents.mouseMoveEventParams) => {
+  mouseX := mouse.mouseX;
+  mouseY := mouse.mouseY;
   refresh();
 };
 
-let stopDragging = () => {
-  current.contents = None;
+let onMouseUp = _ => {
+  stopDragging();
+};
+
+let startDragging = (view, onStopFn) => {
+  current.contents = Some(view);
+  onStop.contents = Some(onStopFn);
   refresh();
+  Mouse.setCapture(~onMouseUp, ~onMouseMove, ());
 };
 
 let init = () => {
   ();
-  Revery.Log.info("x", "init");
+  Revery.Log.info("Drag::init", "Initialized");
   if (!didInit.contents) {
     didInit := true;
     id := 1;
     mouseX := 0.;
     mouseY := 0.;
-    let onMouseMove = (mouse: NodeEvents.mouseMoveEventParams) => {
-      mouseX := mouse.mouseX;
-      mouseY := mouse.mouseY;
-      refresh();
-    };
-    let onMouseUp = _ => {
-      stopDragging();
-    };
-    Revery.UI.Mouse.setCapture(~onMouseMove, ~onMouseUp, ());
   };
 };
 
@@ -71,16 +82,17 @@ module Render = {
       let xRounded = int_of_float(mouseX.contents);
       let yRounded = int_of_float(mouseY.contents);
 
-      let style =
+      let cursorStyle =
         Style.[position(`Absolute), top(yRounded), left(xRounded)];
 
-      let view =
+      let cursor =
         switch (current.contents) {
         | Some(current) => [current]
         | None => []
         };
 
-      (hooks, <View style> ...view </View>);
+      let element = <View style=cursorStyle> ...cursor </View>;
+      (hooks, element);
     });
   };
 };
