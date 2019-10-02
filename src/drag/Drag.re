@@ -52,17 +52,18 @@ let startDragging = (view, onStopFn) => {
   current.contents = Some(view);
   onStop.contents = Some(onStopFn);
   refresh();
-  Mouse.setCapture(~onMouseUp, ~onMouseMove, ());
 };
 
 let init = () => {
   ();
-  Revery.Log.info("Drag::init", "Initialized");
+  print_endline("Drag::init: Initialized");
   if (!didInit.contents) {
     didInit := true;
     id := 1;
     mouseX := 0.;
     mouseY := 0.;
+    let _unregister = Mouse.registerListeners(~onMouseUp, ~onMouseMove, ());
+    ();
   };
 };
 
