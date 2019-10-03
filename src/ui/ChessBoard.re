@@ -104,8 +104,17 @@ module Piece = {
     };
   };
 
+  let getLeft = (piece: piece) => {
+    switch (piece) {
+    | WhitePawn
+    | BlackPawn => 1
+    | WhiteKnight
+    | BlackKnight => (-1)
+    | _ => 0
+    };
+  };
+
   let dragStyle = Style.[position(`Relative), top(-32), left(-32)];
-  let pieceStyle = Style.[width(64), height(64)];
 
   let createElement =
       (
@@ -119,6 +128,8 @@ module Piece = {
       switch (piece) {
       | NoPiece => []
       | _ =>
+        let pieceStyle =
+          Style.[width(64), height(64), left(getLeft(piece))];
         let src = getSrc(piece);
         let opacity = dimmed ? 0.35 : 1.0;
         let image = <Image style=pieceStyle opacity src />;
