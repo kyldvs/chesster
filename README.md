@@ -1,9 +1,10 @@
 # Chesster
+
 A chess app written in Reason ♟️♟️♟️
 
 # Progress
 
-Current progress: Basic assets, no interaction!
+Current progress: Can play a game of chess. Only legal moves should be accepted. Drag & drop doesn't work the best, so make moves slowly. Can only promote to queen for now.
 
 ![IProgress](./docs/progress-2019-09-30.png)
 
