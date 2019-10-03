@@ -84,9 +84,6 @@ type square =
   | H7
   | H8;
 
-/* Castling will involve moving the king two squares. */
-type move = (square, square);
-
 /* Rank and file */
 type rf = (int, int);
 
@@ -189,3 +186,23 @@ type positionPieces = {
   white: pieces,
   black: pieces,
 };
+
+/*
+ * Typical modifiers on moves being made. None are strictly necessary if
+ * we are allowed to assume promotion to queen by default.
+ */
+type modifier =
+  | Check
+  | CheckMate
+  | CastleShort
+  | CastleLong
+  | PromoteToQueen
+  | PromoteToRook
+  | PromoteToBishop
+  | PromoteToKnight;
+
+/*
+ * Specifying the piece is not necessary because we have the starting square,
+ * but it helps with readability.
+ */
+type move = (piece, square, square, list(modifier));

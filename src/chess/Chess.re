@@ -274,6 +274,18 @@ let setPiece = (square, piece, position) => {
   };
 };
 
+let setToPlay = (toPlay, position) => {...position, toPlay};
+
+let setEnPassant = (enPassant, position) => {...position, enPassant};
+
+let revokeWhiteShort = position => {...position, whiteShort: false};
+
+let revokeWhiteLong = position => {...position, whiteLong: false};
+
+let revokeBlackShort = position => {...position, blackShort: false};
+
+let revokeBlackLong = position => {...position, blackLong: false};
+
 let squareToRankAndFile = square => {
   switch (square) {
   | A1 => (0, 0)
@@ -445,6 +457,16 @@ let squareToFile = square => {
 let squareToRank = square => {
   let (rank, _) = squareToRankAndFile(square);
   rank;
+};
+
+let rankDownExn = square => {
+  let (r, f) = squareToRankAndFile(square);
+  rankAndFileToSquare((r - 1, f));
+};
+
+let rankUpExn = square => {
+  let (r, f) = squareToRankAndFile(square);
+  rankAndFileToSquare((r + 1, f));
 };
 
 /**
@@ -800,4 +822,165 @@ let setup = (~start=ChessPositions.start, ~toPlay=White, pairs) => {
       pairs,
     );
   {...position, toPlay};
+};
+
+let modifiersToPiece = (player, modifiers) =>
+  if (Utils.contains(PromoteToQueen, modifiers)) {
+    player == White ? WhiteQueen : BlackQueen;
+  } else if (Utils.contains(PromoteToRook, modifiers)) {
+    player == White ? WhiteRook : BlackRook;
+  } else if (Utils.contains(PromoteToBishop, modifiers)) {
+    player == White ? WhiteBishop : BlackBishop;
+  } else if (Utils.contains(PromoteToKnight, modifiers)) {
+    player == White ? WhiteKnight : BlackKnight;
+  } else {
+    player == White ? WhiteQueen : BlackQueen;
+  };
+
+let applyMove = (position, move) => {
+  let (piece, start, stop, modifiers) = move;
+  let (startRank, startFile) = squareToRankAndFile(start);
+  let (stopRank, stopFile) = squareToRankAndFile(stop);
+  let actualPiece = getPiece(start, position);
+  if (actualPiece != piece) {
+    failwith("Unexpected mismatch of pieces when applying move.");
+  };
+  let toPlay = position.toPlay;
+  if (toPlay == White) {
+    let normal = () => {
+      position
+      |> setPiece(start, NoPiece)
+      |> setPiece(stop, piece)
+      |> setToPlay(Black)
+      |> setEnPassant(None);
+    };
+    if (piece == WhitePawn && position.enPassant == Some(stop)) {
+      /* Check en passant. */
+      let position = normal() |> setPiece(rankDownExn(stop), NoPiece);
+      position;
+    } else if (piece == WhitePawn && stopRank === 7) {
+      /* Check pawn promotion. */
+      let piece = modifiersToPiece(White, modifiers);
+      let position = normal() |> setPiece(stop, piece);
+      position;
+    } else if (piece == WhitePawn && startRank === 1 && stopRank === 3) {
+      /* Check if next player can En passant. */
+      let position = normal() |> setEnPassant(Some(rankUpExn(start)));
+      position;
+    } else if (piece == WhiteKing && start == E1 && (stop == G1 || stop == H1)) {
+      /* Check for castling short. */
+      if (!position.whiteShort) {
+        failwith("White does not have short castling rights.");
+      };
+      let position =
+        normal()
+        |> setPiece(E1, NoPiece)
+        |> setPiece(F1, WhiteRook)
+        |> setPiece(G1, WhiteKing)
+        |> setPiece(H1, NoPiece)
+        |> revokeWhiteShort
+        |> revokeWhiteLong;
+      position;
+    } else if (piece == WhiteKing
+               && start == E1
+               && (stop == A1 || stop == B1 || stop == C1)) {
+      /* Check for castling long. */
+      if (!position.whiteLong) {
+        failwith("White does not have long castling rights.");
+      };
+      let position =
+        normal()
+        |> setPiece(A1, NoPiece)
+        |> setPiece(B1, NoPiece)
+        |> setPiece(C1, WhiteKing)
+        |> setPiece(D1, WhiteRook)
+        |> setPiece(E1, NoPiece)
+        |> revokeWhiteShort
+        |> revokeWhiteLong;
+      position;
+    } else if (piece == WhiteKing) {
+      let position = normal() |> revokeWhiteShort |> revokeWhiteLong;
+      position;
+    } else if (piece == WhiteRook && start == A1) {
+      let position = normal() |> revokeWhiteLong;
+      position;
+    } else if (piece == WhiteRook && start == H1) {
+      let position = normal() |> revokeWhiteShort;
+      position;
+    } else {
+      normal();
+    };
+  } else {
+    let normal = () => {
+      position
+      |> setPiece(start, NoPiece)
+      |> setPiece(stop, piece)
+      |> setToPlay(White)
+      |> setEnPassant(None);
+    };
+    if (piece == BlackPawn && position.enPassant == Some(stop)) {
+      /* Check en passant. */
+      let position = normal() |> setPiece(rankUpExn(stop), NoPiece);
+      position;
+    } else if (piece == BlackPawn && stopRank === 0) {
+      /* Check pawn promotion. */
+      let piece = modifiersToPiece(Black, modifiers);
+      let position = normal() |> setPiece(stop, piece);
+      position;
+    } else if (piece == BlackPawn && startRank === 6 && stopRank === 5) {
+      /* Check if next player can En passant. */
+      let position = normal() |> setEnPassant(Some(rankDownExn(start)));
+      position;
+    } else if (piece == BlackKing && start == E8 && (stop == G8 || stop == H8)) {
+      /* Check for castling short. */
+      if (!position.blackShort) {
+        failwith("Black does not have short castling rights.");
+      };
+      let position =
+        normal()
+        |> setPiece(E8, NoPiece)
+        |> setPiece(F8, BlackRook)
+        |> setPiece(G8, BlackKing)
+        |> setPiece(H8, NoPiece)
+        |> revokeBlackShort
+        |> revokeBlackLong;
+      position;
+    } else if (piece == BlackKing
+               && start == E8
+               && (stop == A8 || stop == B8 || stop == C8)) {
+      /* Check for castling long. */
+      if (!position.blackLong) {
+        failwith("Black does not have long castling rights.");
+      };
+      let position =
+        normal()
+        |> setPiece(A8, NoPiece)
+        |> setPiece(B8, NoPiece)
+        |> setPiece(C8, BlackKing)
+        |> setPiece(D8, BlackRook)
+        |> setPiece(E8, NoPiece)
+        |> revokeWhiteShort
+        |> revokeWhiteLong;
+      position;
+    } else if (piece == BlackKing) {
+      let position = normal() |> revokeBlackShort |> revokeBlackLong;
+      position;
+    } else if (piece == BlackRook && start == A8) {
+      let position = normal() |> revokeBlackLong;
+      position;
+    } else if (piece == BlackRook && start == H8) {
+      let position = normal() |> revokeBlackShort;
+      position;
+    } else {
+      normal();
+    };
+  };
+};
+
+let play = moves => {
+  List.fold_left(
+    (position, move) => applyMove(position, move),
+    ChessPositions.start,
+    moves,
+  );
 };
