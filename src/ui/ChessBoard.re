@@ -6,32 +6,39 @@ open Revery.UI;
 open Revery.UI.Components;
 
 type state = {
-  active: option(square),
+  dragged: option(square),
+  hovered: option(square),
   position: ChessTypes.position,
 };
 
 type action =
-  | Active(option(square))
+  | Dragged(option(square))
+  | Hovered(option(square))
   | TryMoveFrom(square);
 
-let initialState: state = {active: None, position: ChessPositions.start};
+let initialState: state = {
+  dragged: None,
+  hovered: None,
+  position: ChessPositions.start,
+};
 
 let reducer = (action, state) => {
   switch (action) {
-  | Active(square) =>
+  | Dragged(square) => {...state, dragged: square}
+  | Hovered(square) =>
     if (false) {
       switch (square) {
-      | Some(sq) => print_endline("Active: " ++ Chess.squareToString(sq))
-      | None => print_endline("Active: None")
+      | Some(sq) => print_endline("Hovered: " ++ Chess.squareToString(sq))
+      | None => print_endline("Hovered: None")
       };
     };
-    {...state, active: square};
+    {...state, hovered: square};
   | TryMoveFrom(square) =>
     let piece = Chess.getPiece(square, state.position);
-    switch (piece, state.active) {
+    switch (piece, state.hovered) {
     | (NoPiece, _) => state
-    | (piece, Some(activeSquare)) =>
-      let move = (piece, square, activeSquare, []);
+    | (piece, Some(hoveredSquare)) =>
+      let move = (piece, square, hoveredSquare, []);
       let position =
         try (Chess.applyMove(state.position, move)) {
         /* Use old position on any error. */
@@ -68,13 +75,20 @@ module Piece = {
   let pieceStyle = Style.[width(64), height(64)];
 
   let createElement =
-      (~dragging=false, ~piece: piece, ~children: list(unit), _) => {
+      (
+        ~dragging=false,
+        ~dimmed=false,
+        ~piece: piece,
+        ~children: list(unit),
+        _,
+      ) => {
     let children =
       switch (piece) {
       | NoPiece => []
       | _ =>
         let src = getSrc(piece);
-        let image = <Image style=pieceStyle src />;
+        let opacity = dimmed ? 0.35 : 1.0;
+        let image = <Image style=pieceStyle opacity src />;
         [image];
       };
 
@@ -116,6 +130,8 @@ module Square = {
 
   let black = Color.hex("#AE734B");
   let white = Color.hex("#F1D0A1");
+  let draggedDark = Color.hex("#4F5C2C");
+  let draggedLight = Color.hex("#698751");
 
   let centered = Style.[justifyContent(`Center), alignItems(`Center)];
 
@@ -139,14 +155,23 @@ module Square = {
         ~children: list(unit),
         _,
       ) => {
-    let color = isDark(square) ? black : white;
+    let beingDragged = state.dragged == Some(square);
+    let isDark = isDark(square);
+    let color =
+      switch (isDark, beingDragged) {
+      | (true, true) => draggedDark
+      | (true, false) => black
+      | (false, true) => draggedLight
+      | (false, false) => white
+      };
+
     /* Reversed so text is visible. */
-    let textStyle = isDark(square) ? lightTextStyle : darkTextStyle;
+    let textStyle = isDark ? lightTextStyle : darkTextStyle;
 
     let onMouseEnter = _ => {
-      switch (state.active) {
-      | Some(active) when active == square => ()
-      | _ => dispatch(Active(Some(square)))
+      switch (state.hovered) {
+      | Some(hovered) when hovered == square => ()
+      | _ => dispatch(Hovered(Some(square)))
       };
     };
 
@@ -155,9 +180,14 @@ module Square = {
       | NoPiece => ()
       | _ =>
         let pieceEl = <Piece dragging=true piece />;
-        Drag.startDragging(pieceEl, ()
-          /* print_endline("Square: try move from"); */
-          => dispatch(TryMoveFrom(square)));
+        Drag.startDragging(
+          pieceEl,
+          () => {
+            dispatch(Dragged(None));
+            dispatch(TryMoveFrom(square));
+          },
+        );
+        dispatch(Dragged(Some(square)));
       };
     };
 
@@ -189,10 +219,12 @@ module Square = {
         [];
       };
 
-    let children = rankText @ fileText @ [<Piece piece />];
+    /* Piece last so it renders on top. */
+    let children =
+      rankText @ fileText @ [<Piece piece dimmed=beingDragged />];
 
     <View onMouseDown onMouseEnter>
-      <Container height=64 width=64 color> ...children </Container>
+      <ClipContainer height=64 width=64 color> ...children </ClipContainer>
     </View>;
   };
 };
