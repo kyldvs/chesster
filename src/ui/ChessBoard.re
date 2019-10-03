@@ -7,6 +7,7 @@ open Revery.UI.Components;
 
 type state = {
   dragged: option(square),
+  legalMovesForDragged: list(square),
   hovered: option(square),
   position: ChessTypes.position,
 };
@@ -18,13 +19,45 @@ type action =
 
 let initialState: state = {
   dragged: None,
+  legalMovesForDragged: [],
   hovered: None,
   position: ChessPositions.start,
 };
 
 let reducer = (action, state) => {
   switch (action) {
-  | Dragged(square) => {...state, dragged: square}
+  | Dragged(square) =>
+    let legalMoves =
+      switch (square) {
+      | Some(square) =>
+        let untested = Chess.getLegalMoves(square, state.position);
+        /* TODO: Should have a better way to get actual legal moves. */
+        let tested =
+          List.filter(
+            stop =>
+              try (
+                {
+                  let _ =
+                    Chess.applyMove(
+                      state.position,
+                      (
+                        Chess.getPiece(square, state.position),
+                        square,
+                        stop,
+                        [],
+                      ),
+                    );
+                  true;
+                }
+              ) {
+              | _ => false
+              },
+            untested,
+          );
+        tested;
+      | None => []
+      };
+    {...state, dragged: square, legalMovesForDragged: legalMoves};
   | Hovered(square) =>
     if (false) {
       switch (square) {
@@ -130,6 +163,7 @@ module Square = {
 
   let black = Color.hex("#AE734B");
   let white = Color.hex("#F1D0A1");
+
   let draggedDark = Color.hex("#4F5C2C");
   let draggedLight = Color.hex("#698751");
 
@@ -157,13 +191,66 @@ module Square = {
       ) => {
     let beingDragged = state.dragged == Some(square);
     let isDark = isDark(square);
-    let color =
-      switch (isDark, beingDragged) {
-      | (true, true) => draggedDark
-      | (true, false) => black
-      | (false, true) => draggedLight
-      | (false, false) => white
-      };
+    let nonAccent = isDark ? black : white;
+    let accent = isDark ? draggedDark : draggedLight;
+    let color = beingDragged ? accent : nonAccent;
+
+    let legalMoveNoPieceStyle =
+      Style.[
+        position(`Absolute),
+        top(22),
+        left(22),
+        height(0),
+        width(0),
+        borderRadius(10.),
+        border(~color=accent, ~width=10),
+      ];
+
+    let cornerSize = 10;
+
+    let legalMoveTopLeft =
+      Style.[
+        position(`Absolute),
+        top(- cornerSize),
+        left(- cornerSize),
+        height(0),
+        width(0),
+        border(~color=accent, ~width=cornerSize),
+        transform([Transform.Rotate(Reglm.Angle.from_degrees(45.))]),
+      ];
+
+    let legalMoveTopRight =
+      Style.[
+        position(`Absolute),
+        top(- cornerSize),
+        right(- cornerSize),
+        height(0),
+        width(0),
+        border(~color=accent, ~width=cornerSize),
+        transform([Transform.Rotate(Reglm.Angle.from_degrees(45.))]),
+      ];
+
+    let legalMoveBottomLeft =
+      Style.[
+        position(`Absolute),
+        bottom(- cornerSize),
+        left(- cornerSize),
+        height(0),
+        width(0),
+        border(~color=accent, ~width=cornerSize),
+        transform([Transform.Rotate(Reglm.Angle.from_degrees(45.))]),
+      ];
+
+    let legalMoveBottomRight =
+      Style.[
+        position(`Absolute),
+        bottom(- cornerSize),
+        right(- cornerSize),
+        height(0),
+        width(0),
+        border(~color=accent, ~width=cornerSize),
+        transform([Transform.Rotate(Reglm.Angle.from_degrees(45.))]),
+      ];
 
     /* Reversed so text is visible. */
     let textStyle = isDark ? lightTextStyle : darkTextStyle;
@@ -219,9 +306,30 @@ module Square = {
         [];
       };
 
+    let isLegalMove = Utils.contains(square, state.legalMovesForDragged);
+    let hasPiece = piece != NoPiece;
+    let legalMoveAccents =
+      if (isLegalMove) {
+        if (hasPiece) {
+          [
+            <View style=legalMoveTopLeft />,
+            <View style=legalMoveTopRight />,
+            <View style=legalMoveBottomLeft />,
+            <View style=legalMoveBottomRight />,
+          ];
+        } else {
+          [<View style=legalMoveNoPieceStyle />];
+        };
+      } else {
+        [];
+      };
+
     /* Piece last so it renders on top. */
     let children =
-      rankText @ fileText @ [<Piece piece dimmed=beingDragged />];
+      rankText
+      @ fileText
+      @ [<Piece piece dimmed=beingDragged />]
+      @ legalMoveAccents;
 
     <View onMouseDown onMouseEnter>
       <ClipContainer height=64 width=64 color> ...children </ClipContainer>
