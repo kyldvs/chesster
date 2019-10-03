@@ -136,6 +136,11 @@ let squareToString = square => {
   };
 };
 
+let squaresToString = squares => {
+  let inner = squares |> List.map(squareToString) |> String.concat(", ");
+  "[" ++ inner ++ "]";
+};
+
 let getPiece = (square, position) => {
   switch (square) {
   | A1 => position.a1
@@ -660,9 +665,9 @@ let pawnMoves = (square: square, position: position): list(square) => {
       rankAndFileToSquareOpt((r - 1, f)),
       r === 6 ? rankAndFileToSquareOpt((r - 2, f)) : None,
       /* Capture left. Checks En passant too. */
-      maybePawnCapture(r - 1, f - 1, isBlackPiece),
+      maybePawnCapture(r - 1, f - 1, isWhitePiece),
       /* Capture right. Checks En passant too. */
-      maybePawnCapture(r - 1, f + 1, isBlackPiece),
+      maybePawnCapture(r - 1, f + 1, isWhitePiece),
     ];
     Utils.compact(moves);
   | _ => []
@@ -679,6 +684,15 @@ let pawnAttacks = (square: square, position: position): list(square) => {
        /* Attacks are diaganol, so filter moves where pawn stays on file. */
        => squareToFile(square) != squareToFile(move));
 };
+
+let castleMoves = (piece: piece, start: square): list(square) =>
+  if (piece == WhiteKing && start == E1) {
+    [A1, B1, C1, G1, H1];
+  } else if (piece == BlackKing && start == E8) {
+    [A8, B8, C8, G8, H8];
+  } else {
+    [];
+  };
 
 /**
  * Doesn't consider pawn moves and castling.
@@ -715,6 +729,12 @@ let squaresBetween = (square1: square, square2: square): list(square) => {
   };
 };
 
+let hasPieceBetween = (position, start, stop) => {
+  let getPiece = sq => getPiece(sq, position);
+  let inBetween = squaresBetween(start, stop);
+  List.exists(between => getPiece(between) != NoPiece, inBetween);
+};
+
 let findAll = (allPieces: list((square, piece)), piece) => {
   List.fold_left(
     (result, (sq, test)) => test == piece ? [sq, ...result] : result,
@@ -748,15 +768,10 @@ let buildPositionPieces = position => {
 let buildThreats = (position, start, moves) => {
   let getPiece = sq => getPiece(sq, position);
   let testingPiece = getPiece(start);
+  let hasPieceBetween = hasPieceBetween(position, start);
 
   let threats =
-    List.filter(
-      maybeThreatened => {
-        let inBetween = squaresBetween(start, maybeThreatened);
-        List.for_all(between => getPiece(between) == NoPiece, inBetween);
-      },
-      moves,
-    );
+    List.filter(maybeThreatened => !hasPieceBetween(maybeThreatened), moves);
 
   /* Can't threaten own pieces. */
   if (isWhitePiece(testingPiece)) {
@@ -802,16 +817,134 @@ let canAttack = (position, pieces, squareToCheck) => {
   || check(kingThreats);
 };
 
-let inCheck = position => {
+let inCheck = (~player=?, position) => {
   let pp = buildPositionPieces(position);
-  /* The person to play is the only one that can be in check. */
+
+  let player =
+    switch (player) {
+    | Some(player) => player
+    | None => position.toPlay
+    };
+
   let (king, pieces) =
-    switch (position.toPlay) {
+    switch (player) {
     | White => (pp.white.king, pp.black)
     | Black => (pp.black.king, pp.white)
     };
 
   canAttack(position, pieces, king);
+};
+
+let getLegalMoves = (start, position) => {
+  let (_, startFile) = squareToRankAndFile(start);
+  let getPiece = sq => getPiece(sq, position);
+  let hasPieceBetween = hasPieceBetween(position, start);
+  let piece = getPiece(start);
+  let uncheckedMoves =
+    switch (piece) {
+    | NoPiece => []
+    | BlackPawn => pawnMoves(start, position)
+    | BlackKnight => knightMoves(start)
+    | BlackBishop => bishopMoves(start)
+    | BlackRook => rookMoves(start)
+    | BlackQueen => queenMoves(start)
+    | BlackKing => kingMoves(start) @ castleMoves(BlackKing, start)
+    | WhitePawn => pawnMoves(start, position)
+    | WhiteKnight => knightMoves(start)
+    | WhiteBishop => bishopMoves(start)
+    | WhiteRook => rookMoves(start)
+    | WhiteQueen => queenMoves(start)
+    | WhiteKing => kingMoves(start) @ castleMoves(WhiteKing, start)
+    };
+
+  let nothingBetween =
+    uncheckedMoves |> List.filter(stop => !hasPieceBetween(stop));
+
+  let hasValidStop =
+    nothingBetween
+    |> List.filter(stop => {
+         let stopPiece = getPiece(stop);
+         let (_, stopFile) = squareToRankAndFile(stop);
+         switch (piece) {
+         /* This one shouldn't matter. */
+         | NoPiece => true
+         | BlackKnight
+         | BlackBishop
+         | BlackRook
+         | BlackQueen =>
+           /*
+            * Always fine to stop on NoPiece or capture a white piece.
+            *
+            * The game should also never allow capturing a king, but we
+            * verify just to stop some funny business.
+            */
+           !isBlackPiece(stopPiece) && stopPiece != WhiteKing
+         | WhiteKnight
+         | WhiteBishop
+         | WhiteRook
+         | WhiteQueen =>
+           /*
+            * Always fine to stop on NoPiece or capture a black piece.
+            *
+            * The game should also never allow capturing a king, but we
+            * verify just to stop some funny business.
+            */
+           !isWhitePiece(stopPiece) && stopPiece != BlackKing
+         /*
+          * If pawns stay on file they must not be capturing.
+          *
+          * If they do not stay on file they must be capturing normally
+          * or via En Passant.
+          */
+         | BlackPawn =>
+           if (startFile === stopFile) {
+             stopPiece == NoPiece;
+           } else {
+             isWhitePiece(stopPiece) || position.enPassant == Some(stop);
+           }
+         | WhitePawn =>
+           if (startFile === stopFile) {
+             stopPiece == NoPiece;
+           } else {
+             isBlackPiece(stopPiece) || position.enPassant == Some(stop);
+           }
+         /*
+          * If castling it's okay for stop piece to be your own rook. That is
+          * a normal way to signal castling and the move is handled specially
+          * anyway. It will not capture your own rook.
+          */
+         | BlackKing =>
+           if (start == E8 && (stop == G8 || stop == H8)) {
+             getPiece(F8) == NoPiece
+             && getPiece(G8) == NoPiece
+             && getPiece(H8) == BlackRook;
+           } else if (start == E8 && (stop == A8 || stop == B8 || stop == C8)) {
+             getPiece(A8) == BlackRook
+             && getPiece(B8) == NoPiece
+             && getPiece(C8) == NoPiece
+             && getPiece(D8) == NoPiece;
+           } else {
+             /* Normal check otherwise. */
+             !isBlackPiece(stopPiece) && stopPiece != WhiteKing;
+           }
+         | WhiteKing =>
+           if (start == E1 && (stop == G1 || stop == H1)) {
+             getPiece(F1) == NoPiece
+             && getPiece(G1) == NoPiece
+             && getPiece(H1) == WhiteRook;
+           } else if (start == E1 && (stop == A1 || stop == B1 || stop == C1)) {
+             getPiece(A1) == WhiteRook
+             && getPiece(B1) == NoPiece
+             && getPiece(C1) == NoPiece
+             && getPiece(D1) == NoPiece;
+           } else {
+             /* Normal check otherwise. */
+             !isWhitePiece(stopPiece) && stopPiece != BlackKing;
+           }
+         };
+       });
+
+  hasValidStop;
 };
 
 let setup = (~start=ChessPositions.start, ~toPlay=White, pairs) => {
@@ -837,15 +970,32 @@ let modifiersToPiece = (player, modifiers) =>
     player == White ? WhiteQueen : BlackQueen;
   };
 
-let applyMove = (position, move) => {
+let applyMoveHelper = (position, move) => {
   let (piece, start, stop, modifiers) = move;
   let (startRank, startFile) = squareToRankAndFile(start);
   let (stopRank, stopFile) = squareToRankAndFile(stop);
-  let actualPiece = getPiece(start, position);
-  if (actualPiece != piece) {
+
+  if (getPiece(start, position) != piece) {
     failwith("Unexpected mismatch of pieces when applying move.");
   };
+
   let toPlay = position.toPlay;
+
+  if (isWhitePiece(piece) && toPlay == Black) {
+    failwith("It is not White's turn.");
+  } else if (isBlackPiece(piece) && toPlay == White) {
+    failwith("It is not Black's turn.");
+  };
+
+  if (piece == NoPiece) {
+    failwith("Can't act on an empty square.");
+  };
+
+  let legalMoves = getLegalMoves(start, position);
+  if (!Utils.contains(stop, legalMoves)) {
+    failwith("Illegal move. Try: " ++ squaresToString(legalMoves));
+  };
+
   if (toPlay == White) {
     let normal = () => {
       position
@@ -860,8 +1010,8 @@ let applyMove = (position, move) => {
       position;
     } else if (piece == WhitePawn && stopRank === 7) {
       /* Check pawn promotion. */
-      let piece = modifiersToPiece(White, modifiers);
-      let position = normal() |> setPiece(stop, piece);
+      let promoted = modifiersToPiece(White, modifiers);
+      let position = normal() |> setPiece(stop, promoted);
       position;
     } else if (piece == WhitePawn && startRank === 1 && stopRank === 3) {
       /* Check if next player can En passant. */
@@ -872,6 +1022,15 @@ let applyMove = (position, move) => {
       if (!position.whiteShort) {
         failwith("White does not have short castling rights.");
       };
+
+      let pp = buildPositionPieces(position);
+      if (canAttack(position, pp.black, E1)) {
+        failwith("Cannot castle out of check.");
+      } else if (canAttack(position, pp.black, F1)
+                 || canAttack(position, pp.black, G1)) {
+        failwith("Cannot castle through check.");
+      };
+
       let position =
         normal()
         |> setPiece(E1, NoPiece)
@@ -888,6 +1047,21 @@ let applyMove = (position, move) => {
       if (!position.whiteLong) {
         failwith("White does not have long castling rights.");
       };
+
+      let pp = buildPositionPieces(position);
+      if (canAttack(position, pp.black, E1)) {
+        failwith("Cannot castle out of check.");
+      } else if (canAttack(position, pp.black, C1)
+                 || canAttack(position, pp.black, D1)) {
+        /*
+         * Note that it's fine for the rook to move through check. We don't
+         * consider the A or B files.
+         */
+        failwith(
+          "Cannot castle through check.",
+        );
+      };
+
       let position =
         normal()
         |> setPiece(A1, NoPiece)
@@ -924,8 +1098,8 @@ let applyMove = (position, move) => {
       position;
     } else if (piece == BlackPawn && stopRank === 0) {
       /* Check pawn promotion. */
-      let piece = modifiersToPiece(Black, modifiers);
-      let position = normal() |> setPiece(stop, piece);
+      let promoted = modifiersToPiece(Black, modifiers);
+      let position = normal() |> setPiece(stop, promoted);
       position;
     } else if (piece == BlackPawn && startRank === 6 && stopRank === 5) {
       /* Check if next player can En passant. */
@@ -936,6 +1110,15 @@ let applyMove = (position, move) => {
       if (!position.blackShort) {
         failwith("Black does not have short castling rights.");
       };
+
+      let pp = buildPositionPieces(position);
+      if (canAttack(position, pp.white, E8)) {
+        failwith("Cannot castle out of check.");
+      } else if (canAttack(position, pp.white, F8)
+                 || canAttack(position, pp.white, G8)) {
+        failwith("Cannot castle through check.");
+      };
+
       let position =
         normal()
         |> setPiece(E8, NoPiece)
@@ -952,6 +1135,21 @@ let applyMove = (position, move) => {
       if (!position.blackLong) {
         failwith("Black does not have long castling rights.");
       };
+
+      let pp = buildPositionPieces(position);
+      if (canAttack(position, pp.white, E8)) {
+        failwith("Cannot castle out of check.");
+      } else if (canAttack(position, pp.white, C8)
+                 || canAttack(position, pp.white, D8)) {
+        /*
+         * Note that it's fine for the rook to move through check. We don't
+         * consider the A or B files.
+         */
+        failwith(
+          "Cannot castle through check.",
+        );
+      };
+
       let position =
         normal()
         |> setPiece(A8, NoPiece)
@@ -975,6 +1173,20 @@ let applyMove = (position, move) => {
       normal();
     };
   };
+};
+
+let applyMove = (position, move) => {
+  let toPlay = position.toPlay;
+  let startedInCheck = inCheck(~player=toPlay, position);
+  let nextPosition = applyMoveHelper(position, move);
+  if (inCheck(~player=toPlay, nextPosition)) {
+    if (startedInCheck) {
+      failwith("Invalid move. Cannot stay in check.");
+    } else {
+      failwith("Invalid move. Cannot move into check.");
+    };
+  };
+  nextPosition;
 };
 
 let play = moves => {

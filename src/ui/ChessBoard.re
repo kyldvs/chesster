@@ -31,10 +31,14 @@ let reducer = (action, state) => {
     switch (piece, state.active) {
     | (NoPiece, _) => state
     | (piece, Some(activeSquare)) =>
+      let move = (piece, square, activeSquare, []);
       let position =
-        state.position
-        |> Chess.setPiece(square, NoPiece)
-        |> Chess.setPiece(activeSquare, piece);
+        try (Chess.applyMove(state.position, move)) {
+        /* Use old position on any error. */
+        | e =>
+          print_endline(Printexc.to_string(e));
+          state.position;
+        };
       {...state, position};
     | _ => state
     };
@@ -107,12 +111,9 @@ module Square = {
       | NoPiece => ()
       | _ =>
         let pieceEl = <Piece dragging=true piece />;
-        Drag.startDragging(pieceEl, () =>
+        Drag.startDragging(pieceEl, ()
           /* print_endline("Square: try move from"); */
-          dispatch(
-            TryMoveFrom(square),
-          )
-        );
+          => dispatch(TryMoveFrom(square)));
       };
     };
 
