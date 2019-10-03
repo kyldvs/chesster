@@ -175,3 +175,17 @@ type position = {
   blackLong: bool,
   blackShort: bool,
 };
+
+type pieces = {
+  king: square,
+  queen: list(square),
+  rook: list(square),
+  bishop: list(square),
+  knight: list(square),
+  pawn: list(square),
+};
+
+type positionPieces = {
+  white: pieces,
+  black: pieces,
+};
