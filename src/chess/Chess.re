@@ -1101,7 +1101,7 @@ let applyMoveHelper = (position, move) => {
       let promoted = modifiersToPiece(Black, modifiers);
       let position = normal() |> setPiece(stop, promoted);
       position;
-    } else if (piece == BlackPawn && startRank === 6 && stopRank === 5) {
+    } else if (piece == BlackPawn && startRank === 6 && stopRank === 4) {
       /* Check if next player can En passant. */
       let position = normal() |> setEnPassant(Some(rankDownExn(start)));
       position;
