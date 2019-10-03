@@ -835,6 +835,17 @@ let inCheck = (~player=?, position) => {
   canAttack(position, pieces, king);
 };
 
+let getCheck = position => {
+  let pp = buildPositionPieces(position);
+  if (canAttack(position, pp.black, pp.white.king)) {
+    Some(pp.white.king);
+  } else if (canAttack(position, pp.white, pp.black.king)) {
+    Some(pp.black.king);
+  } else {
+    None;
+  };
+};
+
 let getLegalMoves = (start, position) => {
   let (_, startFile) = squareToRankAndFile(start);
   let getPiece = sq => getPiece(sq, position);

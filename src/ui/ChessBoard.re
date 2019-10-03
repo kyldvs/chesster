@@ -10,6 +10,7 @@ type state = {
   legalMovesForDragged: list(square),
   hovered: option(square),
   position: ChessTypes.position,
+  check: option(square),
 };
 
 type action =
@@ -22,9 +23,10 @@ let initialState: state = {
   legalMovesForDragged: [],
   hovered: None,
   position: ChessPositions.start,
+  check: None,
 };
 
-let reducer = (action, state) => {
+let reducerInner = (action, state) => {
   switch (action) {
   | Dragged(square) =>
     let legalMoves =
@@ -83,6 +85,11 @@ let reducer = (action, state) => {
     | _ => state
     };
   };
+};
+
+let reducer = (action, state) => {
+  let state = reducerInner(action, state);
+  {...state, check: Chess.getCheck(state.position)};
 };
 
 module Piece = {
@@ -189,6 +196,29 @@ module Square = {
   let rankStyle = Style.[position(`Absolute), top(4), right(12)];
   let fileStyle = Style.[position(`Absolute), bottom(18), left(6)];
 
+  let checkBoxShadow =
+    Style.BoxShadow.make(
+      ~xOffset=-47.,
+      ~yOffset=-47.,
+      ~blurRadius=5.,
+      ~spreadRadius=90.,
+      ~color=Colors.red,
+      (),
+    );
+
+  let checkStyleOuter =
+    Style.[
+      position(`Absolute),
+      top(0),
+      left(0),
+      right(0),
+      bottom(0),
+      justifyContent(`Center),
+      alignItems(`Center),
+    ];
+
+  let checkStyleInner = Style.[height(10), width(10)];
+
   let createElement =
       (
         ~state,
@@ -200,6 +230,7 @@ module Square = {
         ~children: list(unit),
         _,
       ) => {
+    let inCheck = state.check == Some(square);
     let beingDragged = state.dragged == Some(square);
     let beingHovered = state.hovered == Some(square);
     let isLegalMove = Utils.contains(square, state.legalMovesForDragged);
@@ -344,9 +375,23 @@ module Square = {
         [];
       };
 
+    let checkAccent =
+      if (inCheck) {
+        [
+          <View style=checkStyleOuter>
+            <BoxShadow boxShadow=checkBoxShadow>
+              <View style=checkStyleInner />
+            </BoxShadow>
+          </View>,
+        ];
+      } else {
+        [];
+      };
+
     /* Piece last so it renders on top. */
     let children =
-      rankText
+      checkAccent
+      @ rankText
       @ fileText
       @ [<Piece piece dimmed=beingDragged />]
       @ legalMoveAccents;
