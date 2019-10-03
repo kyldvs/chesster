@@ -447,6 +447,51 @@ let squareToRank = square => {
   rank;
 };
 
+/**
+ * Gets all the pieces in the position and their square.
+ */
+let getAllPieces = position => {
+  allSquares
+  |> List.map(sq => (sq, getPiece(sq, position)))
+  |> List.filter(((_, piece)) => piece != NoPiece);
+};
+
+let isWhitePiece = piece => {
+  switch (piece) {
+  | WhitePawn
+  | WhiteKnight
+  | WhiteBishop
+  | WhiteRook
+  | WhiteQueen
+  | WhiteKing => true
+  | _ => false
+  };
+};
+
+let getWhitePieces = position => {
+  position
+  |> getAllPieces
+  |> List.filter(((_, piece)) => isWhitePiece(piece));
+};
+
+let isBlackPiece = piece => {
+  switch (piece) {
+  | BlackPawn
+  | BlackKnight
+  | BlackBishop
+  | BlackRook
+  | BlackQueen
+  | BlackKing => true
+  | _ => false
+  };
+};
+
+let getBlackPieces = position => {
+  position
+  |> getAllPieces
+  |> List.filter(((_, piece)) => isBlackPiece(piece));
+};
+
 let knightMoves = (square: square): list(square) => {
   let (r, f) = squareToRankAndFile(square);
   let moves = [
@@ -550,6 +595,69 @@ let queenMoves = (square: square): list(square) => {
   rookMoves(square) @ bishopMoves(square);
 };
 
+/*
+ * Squares the pawn can attack. Needs position to determine direction
+ * and if En passant is a valid attack.
+ *
+ * Doesn't handle promotions.
+ */
+let pawnMoves = (square: square, position: position): list(square) => {
+  let (r, f) = squareToRankAndFile(square);
+  let pawn = getPiece(square, position);
+  let maybePawnCapture = (r, f, isOpp) => {
+    let squareOpt = rankAndFileToSquareOpt((r, f));
+    switch (squareOpt) {
+    | Some(square) =>
+      if (isOpp(getPiece(square, position))) {
+        Some(square);
+      } else if (position.enPassant == Some(square)) {
+        Some(square);
+      } else {
+        None;
+      }
+    | None => None
+    };
+  };
+
+  /* Have to check what kind of pawn this is to determine direction. */
+  switch (pawn) {
+  | WhitePawn =>
+    /* White moves up the ranks. */
+    let moves = [
+      rankAndFileToSquareOpt((r + 1, f)),
+      r === 1 ? rankAndFileToSquareOpt((r + 2, f)) : None,
+      /* Capture left. Checks En passant too. */
+      maybePawnCapture(r + 1, f - 1, isBlackPiece),
+      /* Capture right. Checks En passant too. */
+      maybePawnCapture(r + 1, f + 1, isBlackPiece),
+    ];
+    Utils.compact(moves);
+  | BlackPawn =>
+    /* Black moves down the ranks. */
+    let moves = [
+      rankAndFileToSquareOpt((r - 1, f)),
+      r === 6 ? rankAndFileToSquareOpt((r - 2, f)) : None,
+      /* Capture left. Checks En passant too. */
+      maybePawnCapture(r - 1, f - 1, isBlackPiece),
+      /* Capture right. Checks En passant too. */
+      maybePawnCapture(r - 1, f + 1, isBlackPiece),
+    ];
+    Utils.compact(moves);
+  | _ => []
+  };
+};
+
+/*
+ * Squares the pawn can attack. Needs position to determine direction
+ * and if En passant is a valid attack.
+ */
+let pawnAttacks = (square: square, position: position): list(square) => {
+  pawnMoves(square, position)
+  |> List.filter(move
+       /* Attacks are diaganol, so filter moves where pawn stays on file. */
+       => squareToFile(square) != squareToFile(move));
+};
+
 /**
  * Doesn't consider pawn moves and castling.
  */
@@ -585,54 +693,9 @@ let squaresBetween = (square1: square, square2: square): list(square) => {
   };
 };
 
-/**
- * Gets all the pieces in the position and their square.
- */
-let getAllPieces = position => {
-  allSquares
-  |> List.map(sq => (sq, getPiece(sq, position)))
-  |> List.filter(((_, piece)) => piece != NoPiece);
-};
-
-let isWhitePiece = piece => {
-  switch (piece) {
-  | WhitePawn
-  | WhiteKnight
-  | WhiteBishop
-  | WhiteRook
-  | WhiteQueen
-  | WhiteKing => true
-  | _ => false
-  };
-};
-
-let getWhitePieces = position => {
-  position
-  |> getAllPieces
-  |> List.filter(((_, piece)) => isWhitePiece(piece));
-};
-
-let isBlackPiece = piece => {
-  switch (piece) {
-  | BlackPawn
-  | BlackKnight
-  | BlackBishop
-  | BlackRook
-  | BlackQueen
-  | BlackKing => true
-  | _ => false
-  };
-};
-
-let getBlackPieces = position => {
-  position
-  |> getAllPieces
-  |> List.filter(((_, piece)) => isBlackPiece(piece));
-};
-
-let findAll = (allPieces, piece) => {
+let findAll = (allPieces: list((square, piece)), piece) => {
   List.fold_left(
-    (result, (sq, test)) => test == piece ? [sq, ...result] : [],
+    (result, (sq, test)) => test == piece ? [sq, ...result] : result,
     [],
     allPieces,
   );
@@ -658,4 +721,83 @@ let buildPositionPieces = position => {
     pawn: findAll(BlackPawn),
   };
   {white, black};
+};
+
+let buildThreats = (position, start, moves) => {
+  let getPiece = sq => getPiece(sq, position);
+  let testingPiece = getPiece(start);
+
+  let threats =
+    List.filter(
+      maybeThreatened => {
+        let inBetween = squaresBetween(start, maybeThreatened);
+        List.for_all(between => getPiece(between) == NoPiece, inBetween);
+      },
+      moves,
+    );
+
+  /* Can't threaten own pieces. */
+  if (isWhitePiece(testingPiece)) {
+    List.filter(sq => !isWhitePiece(getPiece(sq)), threats);
+  } else if (isBlackPiece(testingPiece)) {
+    List.filter(sq => !isBlackPiece(getPiece(sq)), threats);
+  } else {
+    [];
+  };
+};
+
+let canAttack = (position, pieces, squareToCheck) => {
+  let queenThreats = () =>
+    pieces.queen
+    |> List.map(sq => buildThreats(position, sq, queenMoves(sq)))
+    |> List.concat;
+  let rookThreats = () =>
+    pieces.rook
+    |> List.map(sq => buildThreats(position, sq, rookMoves(sq)))
+    |> List.concat;
+  let bishopThreats = () =>
+    pieces.bishop
+    |> List.map(sq => buildThreats(position, sq, bishopMoves(sq)))
+    |> List.concat;
+  let knightThreats = () =>
+    pieces.knight
+    |> List.map(sq => buildThreats(position, sq, knightMoves(sq)))
+    |> List.concat;
+  let pawnThreats = () =>
+    pieces.pawn
+    |> List.map(sq => buildThreats(position, sq, pawnAttacks(sq, position)))
+    |> List.concat;
+  let kingThreats = () =>
+    buildThreats(position, pieces.king, kingMoves(pieces.king));
+
+  let check = Utils.containsLazy(squareToCheck);
+
+  check(queenThreats)
+  || check(rookThreats)
+  || check(bishopThreats)
+  || check(knightThreats)
+  || check(pawnThreats)
+  || check(kingThreats);
+};
+
+let inCheck = position => {
+  let pp = buildPositionPieces(position);
+  /* The person to play is the only one that can be in check. */
+  let (king, pieces) =
+    switch (position.toPlay) {
+    | White => (pp.white.king, pp.black)
+    | Black => (pp.black.king, pp.white)
+    };
+
+  canAttack(position, pieces, king);
+};
+
+let setup = (~start=ChessPositions.start, ~toPlay=White, pairs) => {
+  let position =
+    List.fold_left(
+      (pos, (sq, piece)) => setPiece(sq, piece, pos),
+      start,
+      pairs,
+    );
+  {...position, toPlay};
 };

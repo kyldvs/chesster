@@ -27,3 +27,6 @@ let seq = (a: int, b: int): list(int) => {
     [];
   };
 };
+
+let containsLazy = (~equals=(==), el, getList) =>
+  List.exists(test => equals(el, test), getList());
