@@ -87,6 +87,30 @@ module Piece = {
 };
 
 module Square = {
+  let rankForDisplay = square => {
+    let r = Chess.squareToRank(square);
+    if (r >= 0 && r <= 7) {
+      string_of_int(r + 1);
+    } else {
+      "";
+    };
+  };
+
+  let fileForDisplay = square => {
+    let f = Chess.squareToFile(square);
+    switch (f) {
+    | 0 => "a"
+    | 1 => "b"
+    | 2 => "c"
+    | 3 => "d"
+    | 4 => "e"
+    | 5 => "f"
+    | 6 => "g"
+    | 7 => "h"
+    | _ => ""
+    };
+  };
+
   let isDark = square =>
     (squareToFile(square) + squareToRank(square)) mod 2 === 0;
 
@@ -95,9 +119,29 @@ module Square = {
 
   let centered = Style.[justifyContent(`Center), alignItems(`Center)];
 
+  let darkTextStyle =
+    Style.[color(black), fontFamily("Roboto-Regular.ttf"), fontSize(12)];
+
+  let lightTextStyle =
+    Style.[color(white), fontFamily("Roboto-Regular.ttf"), fontSize(12)];
+
+  let rankStyle = Style.[position(`Absolute), top(4), right(12)];
+  let fileStyle = Style.[position(`Absolute), bottom(18), left(6)];
+
   let createElement =
-      (~state, ~dispatch, ~square, ~piece: piece, ~children: list(unit), _) => {
+      (
+        ~state,
+        ~dispatch,
+        ~square,
+        ~piece: piece,
+        ~showRank=false,
+        ~showFile=false,
+        ~children: list(unit),
+        _,
+      ) => {
     let color = isDark(square) ? black : white;
+    /* Reversed so text is visible. */
+    let textStyle = isDark(square) ? lightTextStyle : darkTextStyle;
 
     let onMouseEnter = _ => {
       switch (state.active) {
@@ -117,8 +161,38 @@ module Square = {
       };
     };
 
+    let rankText =
+      if (showRank) {
+        let text = rankForDisplay(square);
+        let el =
+          <View style=rankStyle>
+            <Container height=0 width=0>
+              <Text text style=textStyle />
+            </Container>
+          </View>;
+        [el];
+      } else {
+        [];
+      };
+
+    let fileText =
+      if (showFile) {
+        let text = fileForDisplay(square);
+        let el =
+          <View style=fileStyle>
+            <Container height=0 width=0>
+              <Text text style=textStyle />
+            </Container>
+          </View>;
+        [el];
+      } else {
+        [];
+      };
+
+    let children = rankText @ fileText @ [<Piece piece />];
+
     <View onMouseDown onMouseEnter>
-      <Container height=64 width=64 color> <Piece piece /> </Container>
+      <Container height=64 width=64 color> ...children </Container>
     </View>;
   };
 };
@@ -153,7 +227,13 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E8 piece={position.e8} />
               <Square state dispatch square=F8 piece={position.f8} />
               <Square state dispatch square=G8 piece={position.g8} />
-              <Square state dispatch square=H8 piece={position.h8} />
+              <Square
+                state
+                dispatch
+                square=H8
+                piece={position.h8}
+                showRank=true
+              />
             </Row>
             <Row>
               <Square state dispatch square=A7 piece={position.a7} />
@@ -163,7 +243,13 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E7 piece={position.e7} />
               <Square state dispatch square=F7 piece={position.f7} />
               <Square state dispatch square=G7 piece={position.g7} />
-              <Square state dispatch square=H7 piece={position.h7} />
+              <Square
+                state
+                dispatch
+                square=H7
+                piece={position.h7}
+                showRank=true
+              />
             </Row>
             <Row>
               <Square state dispatch square=A6 piece={position.a6} />
@@ -173,7 +259,13 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E6 piece={position.e6} />
               <Square state dispatch square=F6 piece={position.f6} />
               <Square state dispatch square=G6 piece={position.g6} />
-              <Square state dispatch square=H6 piece={position.h6} />
+              <Square
+                state
+                dispatch
+                square=H6
+                piece={position.h6}
+                showRank=true
+              />
             </Row>
             <Row>
               <Square state dispatch square=A5 piece={position.a5} />
@@ -183,7 +275,13 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E5 piece={position.e5} />
               <Square state dispatch square=F5 piece={position.f5} />
               <Square state dispatch square=G5 piece={position.g5} />
-              <Square state dispatch square=H5 piece={position.h5} />
+              <Square
+                state
+                dispatch
+                square=H5
+                piece={position.h5}
+                showRank=true
+              />
             </Row>
             <Row>
               <Square state dispatch square=A4 piece={position.a4} />
@@ -193,7 +291,13 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E4 piece={position.e4} />
               <Square state dispatch square=F4 piece={position.f4} />
               <Square state dispatch square=G4 piece={position.g4} />
-              <Square state dispatch square=H4 piece={position.h4} />
+              <Square
+                state
+                dispatch
+                square=H4
+                piece={position.h4}
+                showRank=true
+              />
             </Row>
             <Row>
               <Square state dispatch square=A3 piece={position.a3} />
@@ -203,7 +307,13 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E3 piece={position.e3} />
               <Square state dispatch square=F3 piece={position.f3} />
               <Square state dispatch square=G3 piece={position.g3} />
-              <Square state dispatch square=H3 piece={position.h3} />
+              <Square
+                state
+                dispatch
+                square=H3
+                piece={position.h3}
+                showRank=true
+              />
             </Row>
             <Row>
               <Square state dispatch square=A2 piece={position.a2} />
@@ -213,17 +323,72 @@ let createElement = (~children, _) => {
               <Square state dispatch square=E2 piece={position.e2} />
               <Square state dispatch square=F2 piece={position.f2} />
               <Square state dispatch square=G2 piece={position.g2} />
-              <Square state dispatch square=H2 piece={position.h2} />
+              <Square
+                state
+                dispatch
+                square=H2
+                piece={position.h2}
+                showRank=true
+              />
             </Row>
             <Row>
-              <Square state dispatch square=A1 piece={position.a1} />
-              <Square state dispatch square=B1 piece={position.b1} />
-              <Square state dispatch square=C1 piece={position.c1} />
-              <Square state dispatch square=D1 piece={position.d1} />
-              <Square state dispatch square=E1 piece={position.e1} />
-              <Square state dispatch square=F1 piece={position.f1} />
-              <Square state dispatch square=G1 piece={position.g1} />
-              <Square state dispatch square=H1 piece={position.h1} />
+              <Square
+                state
+                dispatch
+                square=A1
+                piece={position.a1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=B1
+                piece={position.b1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=C1
+                piece={position.c1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=D1
+                piece={position.d1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=E1
+                piece={position.e1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=F1
+                piece={position.f1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=G1
+                piece={position.g1}
+                showFile=true
+              />
+              <Square
+                state
+                dispatch
+                square=H1
+                piece={position.h1}
+                showRank=true
+                showFile=true
+              />
             </Row>
           </Container>
         </View>
