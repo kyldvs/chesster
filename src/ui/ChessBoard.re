@@ -190,10 +190,20 @@ module Square = {
         _,
       ) => {
     let beingDragged = state.dragged == Some(square);
+    let beingHovered = state.hovered == Some(square);
+    let isLegalMove = Utils.contains(square, state.legalMovesForDragged);
+
     let isDark = isDark(square);
     let nonAccent = isDark ? black : white;
     let accent = isDark ? draggedDark : draggedLight;
-    let color = beingDragged ? accent : nonAccent;
+    let color =
+      if (beingDragged) {
+        accent;
+      } else if (beingHovered && isLegalMove) {
+        accent;
+      } else {
+        nonAccent;
+      };
 
     let legalMoveNoPieceStyle =
       Style.[
@@ -306,7 +316,6 @@ module Square = {
         [];
       };
 
-    let isLegalMove = Utils.contains(square, state.legalMovesForDragged);
     let hasPiece = piece != NoPiece;
     let legalMoveAccents =
       if (isLegalMove) {
