@@ -19,13 +19,13 @@ let initialState: state = {active: None, position: ChessPositions.start};
 let reducer = (action, state) => {
   switch (action) {
   | Active(square) =>
-    /*
-     * switch (square) {
-     * | Some(sq) => print_endline("Active: " ++ Chess.squareToString(sq))
-     * | None => print_endline("Active: None")
-     * };
-     */
-    {...state, active: square}
+    if (false) {
+      switch (square) {
+      | Some(sq) => print_endline("Active: " ++ Chess.squareToString(sq))
+      | None => print_endline("Active: None")
+      };
+    };
+    {...state, active: square};
   | TryMoveFrom(square) =>
     let piece = Chess.getPiece(square, state.position);
     switch (piece, state.active) {

@@ -80,8 +80,8 @@ module Render = {
 
       registerDispatch(dispatch);
 
-      let xRounded = int_of_float(mouseX.contents);
-      let yRounded = int_of_float(mouseY.contents);
+      let xRounded = int_of_float(mouseX.contents) - 1;
+      let yRounded = int_of_float(mouseY.contents) - 1;
 
       let cursorStyle =
         Style.[position(`Absolute), top(yRounded), left(xRounded)];
@@ -92,7 +92,15 @@ module Render = {
         | None => []
         };
 
-      let element = <View style=cursorStyle> ...cursor </View>;
+      /*
+       * Wrap in Container with no area to prevent the item being dragged
+       * from stealing mouse enter/exit events.
+       */
+      let element =
+        <View style=cursorStyle>
+          <Container width=0 height=0> ...cursor </Container>
+        </View>;
+
       (hooks, element);
     });
   };

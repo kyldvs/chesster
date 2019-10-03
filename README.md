@@ -4,7 +4,7 @@ A chess app written in Reason ♟️♟️♟️
 
 # Progress
 
-Current progress: Can play a game of chess. Only legal moves should be accepted. Drag & drop doesn't work the best, so make moves slowly. Can only promote to queen for now.
+Current progress: Can play a game of chess. Only legal moves should be accepted. Can only promote to queen for now. No feedback when making invalid moves except in terminal.
 
 ![IProgress](./docs/progress-2019-09-30.png)
 
