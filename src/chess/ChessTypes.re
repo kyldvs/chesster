@@ -157,12 +157,15 @@ type position = {
   h7: piece,
   h8: piece,
   /*
-   * Necessary to encode in position to determine if enpassant is valid. None
-   * at the start of the game.
-   *
-   * Also used to determine whos turn it is.
+   * Whose turn it is to play.
    */
-  lastMove: option(move),
+  toPlay: player,
+  /*
+   * If the prior move allows you to capture enPassant this will contain the
+   * square you must move a pawn into to capture enPassant. In all other cases
+   * thisis None.
+   */
+  enPassant: option(square),
   /*
    * Castling rights. Note you may have rights but can't castle. (If in or
    * through check for example.)
