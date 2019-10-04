@@ -6,6 +6,8 @@
     Revery
   )
   (modules :standard \ AppExe)
+  ; Just while I'm working on the API. This will get removed.
+  (modules_without_implementation ChessImpl)
 )
 (executable
   (package AppExe)
