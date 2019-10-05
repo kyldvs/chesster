@@ -40,17 +40,35 @@ module Timing: {
 };
 
 module Move: {
-  type t;
-
   type promotion =
     | Queen
     | Rook
     | Bishop
     | Knight;
 
+  type t;
+
   let make: (square, square) => t;
 
   let withPromotion: (promotion, t) => t;
+
+  let withCheck: t => t;
+
+  let withCheckMate: t => t;
+
+  let withCastle: t => t;
+
+  /**
+   * Extra annotations that can be added to moves.
+   */
+  module Annotations: {
+    let setBlunder: t => t;
+    let setMistake: t => t;
+    let setDubious: t => t;
+    let setInteresting: t => t;
+    let setGood: t => t;
+    let setBrilliant: t => t;
+  };
 };
 
 module Position: {
@@ -62,6 +80,7 @@ module Position: {
    * - Castling rights
    * - En Passant
    * - Insufficient material
+   * - 50-move rule
    */
   type t;
 
@@ -70,48 +89,67 @@ module Position: {
    */
   let make: unit => t;
 
+  /**
+   * Applies a move to the position.
+   */
   let applyMove: (Move.t, t) => t;
 
+  /**
+   * Gets the active player that should make the next move.
+   */
   let getPlayer: t => player;
+
+  /**
+   * Gets the piece at a particular square. This may be `NoPiece`.
+   */
   let getPiece: (square, t) => piece;
+
+  /**
+   * Gets all legal moves.
+   *
+   * This should include all possible promotion variants, e.g: A8=Queen,
+   * A8=Rook, A8=Bishop, and A8=Knight
+   */
   let getLegalMoves: (square, t) => list(Move.t);
 
+  /**
+   * Gets the square in check or None.
+   */
   let getCheck: t => option(square);
+
+  /**
+   * Gets the player in checkmate or None.
+   */
   let getCheckMate: t => option(player);
+
+  /**
+   * Whether or not the game is a draw by insufficient material.
+   */
   let isInsufficientMaterial: t => bool;
 
   /**
-   * Allows for more manual modification of a position. Not typically useful
-   * for running a chess game.
+   * How many halfmoves since the last pawn move or capture.
    */
-  module Manual: {
-    let clear: t => t;
-
-    let getEnPassant: t => option(square);
-    let removeEnPassant: t => t;
-    let setEnPassant: (square, t) => t;
-
-    let hasWhiteShort: t => bool;
-    let hasWhiteLong: t => bool;
-    let hasBlackShort: t => bool;
-    let hasBlackLong: t => bool;
-    let removeWhiteShort: t => t;
-    let removeWhiteLong: t => t;
-    let removeBlackShort: t => t;
-    let removeBlackLong: t => t;
-    let addWhiteShort: t => t;
-    let addWhiteLong: t => t;
-    let addBlackShort: t => t;
-    let addBlackLong: t => t;
-  };
+  let getHalfmoveClock: t => int;
 };
 
 module Game: {
+  type result =
+    | WhiteWon
+    | BlackWon
+    | Draw;
+
+  type resultReason =
+    | Timeout
+    | Resignation
+    | Checkmate
+    | Agreement;
+
   /**
    * Tracks an entire chess game from the starting position. It should be able
    * to track data about:
    *
-   * - Draws: 3-fold, 50-moves
+   * - 3-fold repetion
    * - Timing data for moves (if the game is timed)
    * - Statuses like resignation, checkmate, timeout, etc.
    */
@@ -128,9 +166,28 @@ module Game: {
   let withTiming: (Timing.t, t) => t;
 
   /**
-   * Finish defining functions.
+   * Gets the current position of the game.
    */
-  let todo: unit;
+  let getPosition: t => Position.t;
+
+  /**
+   * Applies a move to the game. Should include the amount of time elapsed
+   * in ms since the previous move.
+   *
+   * Elapsed time should always be provided, but can be 0 for premoves or
+   * when the timing doesn't matter.
+   */
+  let applyMove: (~elapsedMS: int, Move.t, t) => t;
+
+  /**
+   * Gets the result of the game if it has been completed.
+   */
+  let getResult: t => option(result);
+
+  /**
+   * Gets the result reason if the game has been completed.
+   */
+  let getResultReason: t => option(resultReason);
 };
 
 /**
