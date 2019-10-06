@@ -1,4 +1,111 @@
-open ChessTypes;
+module Types: {
+  type player =
+    | Black
+    | White;
+
+  type piece =
+    | NoPiece
+    | BlackPawn
+    | BlackKnight
+    | BlackBishop
+    | BlackRook
+    | BlackQueen
+    | BlackKing
+    | WhitePawn
+    | WhiteKnight
+    | WhiteBishop
+    | WhiteRook
+    | WhiteQueen
+    | WhiteKing;
+
+  type promotion =
+    | Queen
+    | Rook
+    | Bishop
+    | Knight;
+
+  type result =
+    | WhiteWon
+    | BlackWon
+    | Draw;
+
+  type resultReason =
+    | Checkmate
+    | Resignation
+    | Timeout
+    | Agreement
+    | InsufficientMaterial
+    | ThreeFoldRepetition
+    | FiftyMoveRule;
+
+  type square =
+    | A1
+    | A2
+    | A3
+    | A4
+    | A5
+    | A6
+    | A7
+    | A8
+    | B1
+    | B2
+    | B3
+    | B4
+    | B5
+    | B6
+    | B7
+    | B8
+    | C1
+    | C2
+    | C3
+    | C4
+    | C5
+    | C6
+    | C7
+    | C8
+    | D1
+    | D2
+    | D3
+    | D4
+    | D5
+    | D6
+    | D7
+    | D8
+    | E1
+    | E2
+    | E3
+    | E4
+    | E5
+    | E6
+    | E7
+    | E8
+    | F1
+    | F2
+    | F3
+    | F4
+    | F5
+    | F6
+    | F7
+    | F8
+    | G1
+    | G2
+    | G3
+    | G4
+    | G5
+    | G6
+    | G7
+    | G8
+    | H1
+    | H2
+    | H3
+    | H4
+    | H5
+    | H6
+    | H7
+    | H8;
+};
+
+open Types;
 
 module Timing: {
   /**
@@ -40,12 +147,6 @@ module Timing: {
 };
 
 module Move: {
-  type promotion =
-    | Queen
-    | Rook
-    | Bishop
-    | Knight;
-
   type t;
 
   let make: (square, square) => t;
@@ -69,6 +170,12 @@ module Move: {
     let setGood: t => t;
     let setBrilliant: t => t;
   };
+};
+
+module TimedMove: {
+  type t;
+  let make: (~elapsedMS: int, Move.t) => t;
+  let getMove: t => Move.t;
 };
 
 module Position: {
@@ -134,17 +241,6 @@ module Position: {
 };
 
 module Game: {
-  type result =
-    | WhiteWon
-    | BlackWon
-    | Draw;
-
-  type resultReason =
-    | Timeout
-    | Resignation
-    | Checkmate
-    | Agreement;
-
   /**
    * Tracks an entire chess game from the starting position. It should be able
    * to track data about:
@@ -171,23 +267,54 @@ module Game: {
   let getPosition: t => Position.t;
 
   /**
+   * Gets the game position at the previous move.
+   */
+  let getPrevious: t => option((TimedMove.t, t));
+
+  /**
+   * Gets the entire history of the game.
+   */
+  let getHistory: t => list((TimedMove.t, t));
+
+  /**
    * Applies a move to the game. Should include the amount of time elapsed
    * in ms since the previous move.
    *
    * Elapsed time should always be provided, but can be 0 for premoves or
    * when the timing doesn't matter.
    */
-  let applyMove: (~elapsedMS: int, Move.t, t) => t;
+  let applyMove: (TimedMove.t, t) => t;
 
   /**
    * Gets the result of the game if it has been completed.
    */
-  let getResult: t => option(result);
+  let getResult: t => option((result, resultReason));
 
   /**
-   * Gets the result reason if the game has been completed.
+   * Gets the number of times a position occurred in this game. Helpful
+   * for determing if a move will result in a 3-fold repetition.
+   *
+   * A position is considered to have occurred before only if the exact
+   * same set of legal moves is available. This includes ability to capture
+   * en-passant and castling rights.
    */
-  let getResultReason: t => option(resultReason);
+  let getOccurrenceCount: (Position.t, t) => int;
+
+  /**
+   * Check if the active player can claim a draw by 3-fold repetition.
+   *
+   * See: `getOccurrenceCount` for determining if 3-fold is valid.
+   */
+  let isThreeFoldRepetition: t => bool;
+};
+
+/**
+ * Helpful utilities for testing and debugging.
+ */
+module Debug: {
+  let sortSquares: list(square) => list(square);
+  let showSquare: square => string;
+  let showSquares: list(square) => string;
 };
 
 /**
