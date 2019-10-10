@@ -302,8 +302,8 @@ module Const = {
     h8: NoPiece,
     active: White,
     enPassant: None,
-    whiteRights: [A1, H1],
-    blackRights: [A8, H8],
+    whiteRights: [],
+    blackRights: [],
     halfmoveClock: 0,
     moveCount: 1,
   };
@@ -342,6 +342,8 @@ module Const = {
     f8: BlackBishop,
     g8: BlackKnight,
     h8: BlackRook,
+    whiteRights: [A1, H1],
+    blackRights: [A8, H8],
   };
 };
 
@@ -859,6 +861,57 @@ module X = {
     | BlackQueen
     | BlackKing => true
     | _ => false
+    };
+  };
+};
+
+module Moves = {
+  let pawn = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    [];
+  };
+
+  let knight = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    [];
+  };
+
+  let bishop = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    [];
+  };
+
+  let rook = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    [];
+  };
+
+  let queen = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    [];
+  };
+
+  let king = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    [];
+  };
+
+  let forSquare = (square, position): list(square) => {
+    let piece = X.getPiece(square, position);
+    switch (piece) {
+    | WhitePawn => pawn(White, square, position)
+    | BlackPawn => pawn(Black, square, position)
+    | WhiteKnight => knight(White, square, position)
+    | BlackKnight => knight(Black, square, position)
+    | WhiteBishop => bishop(White, square, position)
+    | BlackBishop => bishop(Black, square, position)
+    | WhiteRook => rook(White, square, position)
+    | BlackRook => rook(Black, square, position)
+    | WhiteQueen => queen(White, square, position)
+    | BlackQueen => queen(Black, square, position)
+    | WhiteKing => king(White, square, position)
+    | BlackKing => king(Black, square, position)
+    | NoPiece => []
     };
   };
 };
