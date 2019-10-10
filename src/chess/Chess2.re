@@ -31,6 +31,7 @@ module Types = {
 
   type resultReason =
     | Checkmate
+    | Stalemate
     | Resignation
     | Timeout
     | Agreement
@@ -216,15 +217,132 @@ type position = {
   /*
    * Castling rights. Note you may have rights but can't castle. (If in or
    * through check for example.)
+   *
+   * This is a list of the squares of rooks that can be castled with. For a
+   * standard game of chess these are always the A1, H1, A8, and H8 squares.
+   * For non-standard games (Like Chess 960), the files may change.
    */
-  whiteLong: bool,
-  whiteShort: bool,
-  blackLong: bool,
-  blackShort: bool,
+  whiteRights: list(square),
+  blackRights: list(square),
   /*
    * Number of halfmoves since the last pawn move or capture.
    */
   halfmoveClock: int,
+  /*
+   * Which move it is. Starts at 1, incremented after black moves.
+   */
+  moveCount: int,
+};
+
+module Const = {
+  let emptyPosition: position = {
+    a1: NoPiece,
+    a2: NoPiece,
+    a3: NoPiece,
+    a4: NoPiece,
+    a5: NoPiece,
+    a6: NoPiece,
+    a7: NoPiece,
+    a8: NoPiece,
+    b1: NoPiece,
+    b2: NoPiece,
+    b3: NoPiece,
+    b4: NoPiece,
+    b5: NoPiece,
+    b6: NoPiece,
+    b7: NoPiece,
+    b8: NoPiece,
+    c1: NoPiece,
+    c2: NoPiece,
+    c3: NoPiece,
+    c4: NoPiece,
+    c5: NoPiece,
+    c6: NoPiece,
+    c7: NoPiece,
+    c8: NoPiece,
+    d1: NoPiece,
+    d2: NoPiece,
+    d3: NoPiece,
+    d4: NoPiece,
+    d5: NoPiece,
+    d6: NoPiece,
+    d7: NoPiece,
+    d8: NoPiece,
+    e1: NoPiece,
+    e2: NoPiece,
+    e3: NoPiece,
+    e4: NoPiece,
+    e5: NoPiece,
+    e6: NoPiece,
+    e7: NoPiece,
+    e8: NoPiece,
+    f1: NoPiece,
+    f2: NoPiece,
+    f3: NoPiece,
+    f4: NoPiece,
+    f5: NoPiece,
+    f6: NoPiece,
+    f7: NoPiece,
+    f8: NoPiece,
+    g1: NoPiece,
+    g2: NoPiece,
+    g3: NoPiece,
+    g4: NoPiece,
+    g5: NoPiece,
+    g6: NoPiece,
+    g7: NoPiece,
+    g8: NoPiece,
+    h1: NoPiece,
+    h2: NoPiece,
+    h3: NoPiece,
+    h4: NoPiece,
+    h5: NoPiece,
+    h6: NoPiece,
+    h7: NoPiece,
+    h8: NoPiece,
+    active: White,
+    enPassant: None,
+    whiteRights: [A1, H1],
+    blackRights: [A8, H8],
+    halfmoveClock: 0,
+    moveCount: 1,
+  };
+
+  let startPosition: position = {
+    ...emptyPosition,
+    a1: WhiteRook,
+    b1: WhiteKnight,
+    c1: WhiteBishop,
+    d1: WhiteQueen,
+    e1: WhiteKing,
+    f1: WhiteBishop,
+    g1: WhiteKnight,
+    h1: WhiteRook,
+    a2: WhitePawn,
+    b2: WhitePawn,
+    c2: WhitePawn,
+    d2: WhitePawn,
+    e2: WhitePawn,
+    f2: WhitePawn,
+    g2: WhitePawn,
+    h2: WhitePawn,
+    a7: BlackPawn,
+    b7: BlackPawn,
+    c7: BlackPawn,
+    d7: BlackPawn,
+    e7: BlackPawn,
+    f7: BlackPawn,
+    g7: BlackPawn,
+    h7: BlackPawn,
+    a8: BlackRook,
+    b8: BlackKnight,
+    c8: BlackBishop,
+    d8: BlackQueen,
+    e8: BlackKing,
+    f8: BlackBishop,
+    g8: BlackKnight,
+    h8: BlackRook,
+  };
 };
 
 /*
@@ -583,13 +701,19 @@ module X = {
 
   let setEnPassant = (enPassant, position) => {...position, enPassant};
 
-  let revokeWhiteShort = position => {...position, whiteShort: false};
+  let revokeWhiteRights = (square, position) => {
+    ...position,
+    whiteRights: List.filter(right => right != square, position.whiteRights),
+  };
 
-  let revokeWhiteLong = position => {...position, whiteLong: false};
+  let revokeAllWhiteRights = position => {...position, whiteRights: []};
 
-  let revokeBlackShort = position => {...position, blackShort: false};
+  let revokeBlackRights = (square, position) => {
+    ...position,
+    blackRights: List.filter(right => right != square, position.blackRights),
+  };
 
-  let revokeBlackLong = position => {...position, blackLong: false};
+  let revokeAllBlackRights = position => {...position, blackRights: []};
 
   /**
    * Comparison function useful to sort squares. Order: A1, A2, ..., H7, H8.
@@ -801,17 +925,22 @@ module TimedMove = {
 };
 
 module Position = {
-  type t = unit;
+  type t = position;
 
-  let make = () => ();
+  let make = () => Const.startPosition;
+  /* TODO: Implement. */
   let applyMove = (move, position) => position;
-  let getPlayer = position => White;
-  let getPiece = (square, position) => NoPiece;
+  let getPlayer = position => position.active;
+  let getPiece = (square, position) => X.getPiece(square, position);
+  /* TODO: Implement. */
   let getLegalMoves = (square, position) => [];
+  /* TODO: Implement. */
   let getCheck = position => None;
+  /* TODO: Implement. */
   let getCheckMate = position => None;
+  /* TODO: Implement. */
   let isInsufficientMaterial = position => false;
-  let getHalfmoveClock = position => 0;
+  let getHalfmoveClock = position => position.halfmoveClock;
 };
 
 module Game = {
@@ -819,7 +948,7 @@ module Game = {
 
   let make = () => ();
   let withTiming = (timing, game) => game;
-  let getPosition = game => ();
+  let getPosition = game => Const.emptyPosition;
   let getPrevious = game => None;
   let getHistory = game => [];
   let applyMove = (move, game) => game;

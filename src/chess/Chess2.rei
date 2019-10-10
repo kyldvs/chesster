@@ -31,6 +31,7 @@ module Types: {
 
   type resultReason =
     | Checkmate
+    | Stalemate
     | Resignation
     | Timeout
     | Agreement
@@ -223,11 +224,6 @@ module Position: {
    * Gets the square in check or None.
    */
   let getCheck: t => option(square);
-
-  /**
-   * Gets the player in checkmate or None.
-   */
-  let getCheckMate: t => option(player);
 
   /**
    * Whether or not the game is a draw by insufficient material.
