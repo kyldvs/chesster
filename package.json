@@ -27,7 +27,7 @@
     "@opam/dune": "1.7.3",
     "@reason-native/rely": "^3.1.0",
     "ocaml": "~4.7.0",
-    "revery": "github:kyldvs/revery#ce0b6f0"
+    "revery": "github:revery-ui/revery#04442b9"
   },
   "resolutions": {
     "@opam/cmdliner": "1.0.2",
@@ -37,7 +37,6 @@
       "github:ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#db257ce",
     "pesy": "0.4.1",
     "rebez": "github:jchavarri/rebez#46cbc183",
-    "@brisk/brisk-reconciler": "github:briskml/brisk-reconciler#dd933fc",
     "@opam/merlin-extend": "0.4"
   },
   "scripts": {

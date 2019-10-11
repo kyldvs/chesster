@@ -7,6 +7,7 @@
   )
   (modules :standard \ AppExe)
 )
+
 (executable
   (package AppExe)
   (name AppExe)
@@ -20,8 +21,9 @@
 )
 
 (install
-    (section bin)
-    (package AppJs)
-    (files AppExe.bc.js))
+  (section bin)
+  (package AppJS)
+  (files AppExe.bc.js)
+)
 
 (include_subdirs unqualified)
