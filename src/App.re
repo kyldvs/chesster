@@ -1,5 +1,10 @@
 let init = app => {
   let win = Revery.App.createWindow(app, "Chesster");
+
+  if (Revery.Environment.webGL) {
+    Revery.Window.maximize(win);
+  }
+
   let element = <MainView />;
   Drag.init();
   let _ = Revery.UI.start(win, element);

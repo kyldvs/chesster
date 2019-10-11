@@ -254,9 +254,14 @@ module Square = {
         left(22),
         height(0),
         width(0),
-        borderRadius(10.),
         border(~color=accent, ~width=10),
       ];
+
+    // There's a bug in Revery right now in the JS builds -
+    // the 'border-radius' shader fails to compile.
+    let legalMoveNoPieceStyle =
+      Environment.webGL ? 
+        legalMoveNoPieceStyle : Style.[borderRadius(10.), ...legalMoveNoPieceStyle];
 
     let cornerSize = 10;
 

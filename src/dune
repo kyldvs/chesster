@@ -10,6 +10,7 @@
 (executable
   (package AppExe)
   (name AppExe)
+  (js_of_ocaml (javascript_files stubs.js))
   (public_name AppExe)
   (libraries
     App
@@ -17,4 +18,10 @@
   )
   (modules AppExe)
 )
+
+(install
+    (section bin)
+    (package AppJs)
+    (files AppExe.bc.js))
+
 (include_subdirs unqualified)

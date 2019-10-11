@@ -22,7 +22,7 @@ let containerStyle =
     right(0),
   ];
 
-let innerStyle = Style.[flexDirection(`Row), alignItems(`FlexEnd)];
+let innerStyle = Style.[maxHeight(50), flexDirection(`Row), alignItems(`FlexEnd)];
 
 let createElement = (~children: list(unit), _) => {
   let element =
