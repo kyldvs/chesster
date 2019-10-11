@@ -104,9 +104,100 @@ module Types = {
     | H6
     | H7
     | H8;
+
+  exception IllegalMove(square, square, string);
 };
 
 open Types;
+
+let squareToRankAndFile = square => {
+  switch (square) {
+  | A1 => (0, 0)
+  | A2 => (1, 0)
+  | A3 => (2, 0)
+  | A4 => (3, 0)
+  | A5 => (4, 0)
+  | A6 => (5, 0)
+  | A7 => (6, 0)
+  | A8 => (7, 0)
+  | B1 => (0, 1)
+  | B2 => (1, 1)
+  | B3 => (2, 1)
+  | B4 => (3, 1)
+  | B5 => (4, 1)
+  | B6 => (5, 1)
+  | B7 => (6, 1)
+  | B8 => (7, 1)
+  | C1 => (0, 2)
+  | C2 => (1, 2)
+  | C3 => (2, 2)
+  | C4 => (3, 2)
+  | C5 => (4, 2)
+  | C6 => (5, 2)
+  | C7 => (6, 2)
+  | C8 => (7, 2)
+  | D1 => (0, 3)
+  | D2 => (1, 3)
+  | D3 => (2, 3)
+  | D4 => (3, 3)
+  | D5 => (4, 3)
+  | D6 => (5, 3)
+  | D7 => (6, 3)
+  | D8 => (7, 3)
+  | E1 => (0, 4)
+  | E2 => (1, 4)
+  | E3 => (2, 4)
+  | E4 => (3, 4)
+  | E5 => (4, 4)
+  | E6 => (5, 4)
+  | E7 => (6, 4)
+  | E8 => (7, 4)
+  | F1 => (0, 5)
+  | F2 => (1, 5)
+  | F3 => (2, 5)
+  | F4 => (3, 5)
+  | F5 => (4, 5)
+  | F6 => (5, 5)
+  | F7 => (6, 5)
+  | F8 => (7, 5)
+  | G1 => (0, 6)
+  | G2 => (1, 6)
+  | G3 => (2, 6)
+  | G4 => (3, 6)
+  | G5 => (4, 6)
+  | G6 => (5, 6)
+  | G7 => (6, 6)
+  | G8 => (7, 6)
+  | H1 => (0, 7)
+  | H2 => (1, 7)
+  | H3 => (2, 7)
+  | H4 => (3, 7)
+  | H5 => (4, 7)
+  | H6 => (5, 7)
+  | H7 => (6, 7)
+  | H8 => (7, 7)
+  };
+};
+
+/**
+ * Comparison function useful to sort squares. Order: A1, A2, ..., H7, H8.
+ */
+let compareSquares = (s1, s2) => {
+  let (r1, f1) = squareToRankAndFile(s1);
+  let (r2, f2) = squareToRankAndFile(s2);
+  let fileComparison = compare(f1, f2);
+  if (fileComparison === 0) {
+    compare(r1, r2);
+  } else {
+    fileComparison;
+  };
+};
+
+module SquareSet =
+  Set.Make({
+    type t = square;
+    let compare = compareSquares;
+  });
 
 type timing = {
   timeLimit: option(int),
@@ -234,117 +325,23 @@ type position = {
   moveCount: int,
 };
 
-module Const = {
-  let emptyPosition: position = {
-    a1: NoPiece,
-    a2: NoPiece,
-    a3: NoPiece,
-    a4: NoPiece,
-    a5: NoPiece,
-    a6: NoPiece,
-    a7: NoPiece,
-    a8: NoPiece,
-    b1: NoPiece,
-    b2: NoPiece,
-    b3: NoPiece,
-    b4: NoPiece,
-    b5: NoPiece,
-    b6: NoPiece,
-    b7: NoPiece,
-    b8: NoPiece,
-    c1: NoPiece,
-    c2: NoPiece,
-    c3: NoPiece,
-    c4: NoPiece,
-    c5: NoPiece,
-    c6: NoPiece,
-    c7: NoPiece,
-    c8: NoPiece,
-    d1: NoPiece,
-    d2: NoPiece,
-    d3: NoPiece,
-    d4: NoPiece,
-    d5: NoPiece,
-    d6: NoPiece,
-    d7: NoPiece,
-    d8: NoPiece,
-    e1: NoPiece,
-    e2: NoPiece,
-    e3: NoPiece,
-    e4: NoPiece,
-    e5: NoPiece,
-    e6: NoPiece,
-    e7: NoPiece,
-    e8: NoPiece,
-    f1: NoPiece,
-    f2: NoPiece,
-    f3: NoPiece,
-    f4: NoPiece,
-    f5: NoPiece,
-    f6: NoPiece,
-    f7: NoPiece,
-    f8: NoPiece,
-    g1: NoPiece,
-    g2: NoPiece,
-    g3: NoPiece,
-    g4: NoPiece,
-    g5: NoPiece,
-    g6: NoPiece,
-    g7: NoPiece,
-    g8: NoPiece,
-    h1: NoPiece,
-    h2: NoPiece,
-    h3: NoPiece,
-    h4: NoPiece,
-    h5: NoPiece,
-    h6: NoPiece,
-    h7: NoPiece,
-    h8: NoPiece,
-    active: White,
-    enPassant: None,
-    whiteRights: [],
-    blackRights: [],
-    halfmoveClock: 0,
-    moveCount: 1,
-  };
+/*
+ * Information that is derived from other parts of the position.
+ */
+type derivedPosition = {
+  whiteThreats: SquareSet.t,
+  blackThreats: SquareSet.t,
+};
 
-  let startPosition: position = {
-    ...emptyPosition,
-    a1: WhiteRook,
-    b1: WhiteKnight,
-    c1: WhiteBishop,
-    d1: WhiteQueen,
-    e1: WhiteKing,
-    f1: WhiteBishop,
-    g1: WhiteKnight,
-    h1: WhiteRook,
-    a2: WhitePawn,
-    b2: WhitePawn,
-    c2: WhitePawn,
-    d2: WhitePawn,
-    e2: WhitePawn,
-    f2: WhitePawn,
-    g2: WhitePawn,
-    h2: WhitePawn,
-    a7: BlackPawn,
-    b7: BlackPawn,
-    c7: BlackPawn,
-    d7: BlackPawn,
-    e7: BlackPawn,
-    f7: BlackPawn,
-    g7: BlackPawn,
-    h7: BlackPawn,
-    a8: BlackRook,
-    b8: BlackKnight,
-    c8: BlackBishop,
-    d8: BlackQueen,
-    e8: BlackKing,
-    f8: BlackBishop,
-    g8: BlackKnight,
-    h8: BlackRook,
-    whiteRights: [A1, H1],
-    blackRights: [A8, H8],
-  };
+type fullPosition = {
+  /*
+   * The unique information we need to encode a position.
+   */
+  p: position,
+  /*
+   * Information that is derived from other parts of the position.
+   */
+  derived: derivedPosition,
 };
 
 /*
@@ -418,74 +415,7 @@ module X = {
     H8,
   ];
 
-  let squareToRankAndFile = square => {
-    switch (square) {
-    | A1 => (0, 0)
-    | A2 => (1, 0)
-    | A3 => (2, 0)
-    | A4 => (3, 0)
-    | A5 => (4, 0)
-    | A6 => (5, 0)
-    | A7 => (6, 0)
-    | A8 => (7, 0)
-    | B1 => (0, 1)
-    | B2 => (1, 1)
-    | B3 => (2, 1)
-    | B4 => (3, 1)
-    | B5 => (4, 1)
-    | B6 => (5, 1)
-    | B7 => (6, 1)
-    | B8 => (7, 1)
-    | C1 => (0, 2)
-    | C2 => (1, 2)
-    | C3 => (2, 2)
-    | C4 => (3, 2)
-    | C5 => (4, 2)
-    | C6 => (5, 2)
-    | C7 => (6, 2)
-    | C8 => (7, 2)
-    | D1 => (0, 3)
-    | D2 => (1, 3)
-    | D3 => (2, 3)
-    | D4 => (3, 3)
-    | D5 => (4, 3)
-    | D6 => (5, 3)
-    | D7 => (6, 3)
-    | D8 => (7, 3)
-    | E1 => (0, 4)
-    | E2 => (1, 4)
-    | E3 => (2, 4)
-    | E4 => (3, 4)
-    | E5 => (4, 4)
-    | E6 => (5, 4)
-    | E7 => (6, 4)
-    | E8 => (7, 4)
-    | F1 => (0, 5)
-    | F2 => (1, 5)
-    | F3 => (2, 5)
-    | F4 => (3, 5)
-    | F5 => (4, 5)
-    | F6 => (5, 5)
-    | F7 => (6, 5)
-    | F8 => (7, 5)
-    | G1 => (0, 6)
-    | G2 => (1, 6)
-    | G3 => (2, 6)
-    | G4 => (3, 6)
-    | G5 => (4, 6)
-    | G6 => (5, 6)
-    | G7 => (6, 6)
-    | G8 => (7, 6)
-    | H1 => (0, 7)
-    | H2 => (1, 7)
-    | H3 => (2, 7)
-    | H4 => (3, 7)
-    | H5 => (4, 7)
-    | H6 => (5, 7)
-    | H7 => (6, 7)
-    | H8 => (7, 7)
-    };
-  };
+  let squareToRankAndFile = squareToRankAndFile;
 
   let setPiece = (square, piece, position) => {
     switch (square) {
@@ -717,19 +647,7 @@ module X = {
 
   let revokeAllBlackRights = position => {...position, blackRights: []};
 
-  /**
-   * Comparison function useful to sort squares. Order: A1, A2, ..., H7, H8.
-   */
-  let compareSquares = (s1, s2) => {
-    let (r1, f1) = squareToRankAndFile(s1);
-    let (r2, f2) = squareToRankAndFile(s2);
-    let fileComparison = compare(f1, f2);
-    if (fileComparison === 0) {
-      compare(r1, r2);
-    } else {
-      fileComparison;
-    };
-  };
+  let compareSquares = compareSquares;
 
   let sort = List.sort(compareSquares);
 
@@ -852,6 +770,13 @@ module X = {
     };
   };
 
+  let isWhiteOrNoPiece = piece => {
+    switch (piece) {
+    | NoPiece => true
+    | _ => isWhitePiece(piece)
+    };
+  };
+
   let isBlackPiece = piece => {
     switch (piece) {
     | BlackPawn
@@ -863,40 +788,236 @@ module X = {
     | _ => false
     };
   };
+
+  let isBlackOrNoPiece = piece => {
+    switch (piece) {
+    | NoPiece => true
+    | _ => isBlackPiece(piece)
+    };
+  };
+
+  let notMe = player => {
+    switch (player) {
+    | White => isBlackOrNoPiece
+    | Black => isWhiteOrNoPiece
+    };
+  };
+
+  let isMe = player => {
+    switch (player) {
+    | White => isWhitePiece
+    | Black => isBlackPiece
+    };
+  };
+
+  let isOpp = player => {
+    switch (player) {
+    | White => isBlackPiece
+    | Black => isWhitePiece
+    };
+  };
+
+  let filterSeq = (player, position, seq) => {
+    let isMe = isMe(player);
+    let isOpp = isOpp(player);
+    let getPiece = sq => getPiece(sq, position);
+    let noneAllowed = square => {
+      let piece = getPiece(square);
+      isMe(piece);
+    };
+    let oneAllowed = square => {
+      let piece = getPiece(square);
+      isOpp(piece);
+    };
+    Utils.dropAfter(~noneAllowed, ~oneAllowed, seq);
+  };
 };
 
 module Moves = {
-  let pawn = (player, square, position) => {
-    let (r, f) = X.squareToRankAndFile(square);
-    [];
-  };
-
   let knight = (player, square, position) => {
     let (r, f) = X.squareToRankAndFile(square);
-    [];
+    let moves = [
+      X.rankAndFileToSquareOpt((r - 1, f - 2)),
+      X.rankAndFileToSquareOpt((r - 1, f + 2)),
+      X.rankAndFileToSquareOpt((r + 1, f - 2)),
+      X.rankAndFileToSquareOpt((r + 1, f + 2)),
+      X.rankAndFileToSquareOpt((r - 2, f - 1)),
+      X.rankAndFileToSquareOpt((r - 2, f + 1)),
+      X.rankAndFileToSquareOpt((r + 2, f - 1)),
+      X.rankAndFileToSquareOpt((r + 2, f + 1)),
+    ];
+
+    let notMe = X.notMe(player);
+    moves
+    |> Utils.compact
+    |> List.filter(square => {
+         let piece = X.getPiece(square, position);
+         notMe(piece);
+       });
   };
 
   let bishop = (player, square, position) => {
     let (r, f) = X.squareToRankAndFile(square);
-    [];
+    let moveDirs = [
+      /* Up-left */
+      [
+        X.rankAndFileToSquareOpt((r + 1, f - 1)),
+        X.rankAndFileToSquareOpt((r + 2, f - 2)),
+        X.rankAndFileToSquareOpt((r + 3, f - 3)),
+        X.rankAndFileToSquareOpt((r + 4, f - 4)),
+        X.rankAndFileToSquareOpt((r + 5, f - 5)),
+        X.rankAndFileToSquareOpt((r + 6, f - 6)),
+        X.rankAndFileToSquareOpt((r + 7, f - 7)),
+      ],
+      /* Up-Right */
+      [
+        X.rankAndFileToSquareOpt((r + 1, f + 1)),
+        X.rankAndFileToSquareOpt((r + 2, f + 2)),
+        X.rankAndFileToSquareOpt((r + 3, f + 3)),
+        X.rankAndFileToSquareOpt((r + 4, f + 4)),
+        X.rankAndFileToSquareOpt((r + 5, f + 5)),
+        X.rankAndFileToSquareOpt((r + 6, f + 6)),
+        X.rankAndFileToSquareOpt((r + 7, f + 7)),
+      ],
+      /* Down-Left */
+      [
+        X.rankAndFileToSquareOpt((r - 1, f - 1)),
+        X.rankAndFileToSquareOpt((r - 2, f - 2)),
+        X.rankAndFileToSquareOpt((r - 3, f - 3)),
+        X.rankAndFileToSquareOpt((r - 4, f - 4)),
+        X.rankAndFileToSquareOpt((r - 5, f - 5)),
+        X.rankAndFileToSquareOpt((r - 6, f - 6)),
+        X.rankAndFileToSquareOpt((r - 7, f - 7)),
+      ],
+      /* Down-Right */
+      [
+        X.rankAndFileToSquareOpt((r - 1, f + 1)),
+        X.rankAndFileToSquareOpt((r - 2, f + 2)),
+        X.rankAndFileToSquareOpt((r - 3, f + 3)),
+        X.rankAndFileToSquareOpt((r - 4, f + 4)),
+        X.rankAndFileToSquareOpt((r - 5, f + 5)),
+        X.rankAndFileToSquareOpt((r - 6, f + 6)),
+        X.rankAndFileToSquareOpt((r - 7, f + 7)),
+      ],
+    ];
+
+    moveDirs
+    |> List.map(Utils.compact)
+    |> List.map(X.filterSeq(player, position))
+    |> List.flatten;
   };
 
   let rook = (player, square, position) => {
     let (r, f) = X.squareToRankAndFile(square);
-    [];
+    let moveDirs = [
+      /* Up */
+      [
+        X.rankAndFileToSquareOpt((r + 1, f)),
+        X.rankAndFileToSquareOpt((r + 2, f)),
+        X.rankAndFileToSquareOpt((r + 3, f)),
+        X.rankAndFileToSquareOpt((r + 4, f)),
+        X.rankAndFileToSquareOpt((r + 5, f)),
+        X.rankAndFileToSquareOpt((r + 6, f)),
+        X.rankAndFileToSquareOpt((r + 7, f)),
+      ],
+      /* Right */
+      [
+        X.rankAndFileToSquareOpt((r, f + 1)),
+        X.rankAndFileToSquareOpt((r, f + 2)),
+        X.rankAndFileToSquareOpt((r, f + 3)),
+        X.rankAndFileToSquareOpt((r, f + 4)),
+        X.rankAndFileToSquareOpt((r, f + 5)),
+        X.rankAndFileToSquareOpt((r, f + 6)),
+        X.rankAndFileToSquareOpt((r, f + 7)),
+      ],
+      /* Down */
+      [
+        X.rankAndFileToSquareOpt((r - 1, f)),
+        X.rankAndFileToSquareOpt((r - 2, f)),
+        X.rankAndFileToSquareOpt((r - 3, f)),
+        X.rankAndFileToSquareOpt((r - 4, f)),
+        X.rankAndFileToSquareOpt((r - 5, f)),
+        X.rankAndFileToSquareOpt((r - 6, f)),
+        X.rankAndFileToSquareOpt((r - 7, f)),
+      ],
+      /* Left */
+      [
+        X.rankAndFileToSquareOpt((r, f - 1)),
+        X.rankAndFileToSquareOpt((r, f - 2)),
+        X.rankAndFileToSquareOpt((r, f - 3)),
+        X.rankAndFileToSquareOpt((r, f - 4)),
+        X.rankAndFileToSquareOpt((r, f - 5)),
+        X.rankAndFileToSquareOpt((r, f - 6)),
+        X.rankAndFileToSquareOpt((r, f - 7)),
+      ],
+    ];
+
+    moveDirs
+    |> List.map(Utils.compact)
+    |> List.map(X.filterSeq(player, position))
+    |> List.flatten;
   };
 
   let queen = (player, square, position) => {
-    let (r, f) = X.squareToRankAndFile(square);
-    [];
+    rook(player, square, position) @ bishop(player, square, position);
   };
 
   let king = (player, square, position) => {
     let (r, f) = X.squareToRankAndFile(square);
+    let moves = [
+      X.rankAndFileToSquareOpt((r + 1, f + 1)),
+      X.rankAndFileToSquareOpt((r, f + 1)),
+      X.rankAndFileToSquareOpt((r - 1, f + 1)),
+      X.rankAndFileToSquareOpt((r + 1, f)),
+      X.rankAndFileToSquareOpt((r - 1, f)),
+      X.rankAndFileToSquareOpt((r + 1, f - 1)),
+      X.rankAndFileToSquareOpt((r, f - 1)),
+      X.rankAndFileToSquareOpt((r - 1, f - 1)),
+    ];
+
+    let notMe = X.notMe(player);
+    let moves =
+      moves
+      |> Utils.compact
+      |> List.filter(square => {
+           let piece = X.getPiece(square, position);
+           notMe(piece);
+         });
+
+    moves;
+  };
+
+  let pawnAttacks = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    let _ = (r, f);
     [];
   };
 
-  let forSquare = (square, position): list(square) => {
+  let pawnNonAttacks = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    let _ = (r, f);
+    [];
+  };
+
+  let pawnPromotions = (player, square, position) => {
+    let (r, f) = X.squareToRankAndFile(square);
+    let _ = (r, f);
+    [];
+  };
+
+  let pawn = (player, square, position) => {
+    pawnAttacks(player, square, position)
+    @ pawnNonAttacks(player, square, position)
+    @ pawnPromotions(player, square, position);
+  };
+
+  /*
+   * Includes all valid moves except for:
+   *
+   * - Castling.
+   * - Moves that are illegal due to check.
+   */
+  let forSquareFirstPass = (square, position): list(square) => {
     let piece = X.getPiece(square, position);
     switch (piece) {
     | WhitePawn => pawn(White, square, position)
@@ -913,6 +1034,88 @@ module Moves = {
     | BlackKing => king(Black, square, position)
     | NoPiece => []
     };
+  };
+
+  let getThreats = (player, position): SquareSet.t => {
+    let isMe = X.isMe(player);
+    position
+    |> X.getAllPieces
+    |> List.filter(((sq, piece)) => isMe(piece))
+    |> List.map(((sq, piece)) => {
+         switch (piece) {
+         /* Only consider pawn attacks. Not normal moves or promitions. */
+         | WhitePawn
+         | BlackPawn => pawnAttacks(player, sq, position)
+         /* Castling is not included in king moves, no need to special case. */
+         | _ => forSquareFirstPass(sq, position)
+         }
+       })
+    |> List.flatten
+    |> SquareSet.of_list;
+  };
+
+  /*
+   * Gets the next position. Assumes move is valid (but not necessarily legal.)
+   */
+  let nextPosition = (sq1, sq2, position: position): position => {
+    let (r1, f1) = X.squareToRankAndFile(sq1);
+    let (r2, f2) = X.squareToRankAndFile(sq2);
+    let p1 = X.getPiece(sq1, position);
+    let p2 = X.getPiece(sq2, position);
+    let next =
+      switch (p1, p2, position.enPassant) {
+      /* Check en-passant. */
+      | (WhitePawn | BlackPawn, _, Some(ep)) when ep == sq2 =>
+        if (p1 == WhitePawn && r1 == 4 && r2 == 5) {
+          let targetSquare = X.rankDownExn(sq2);
+          let targetPiece = X.getPiece(targetSquare, position);
+          if (targetPiece != BlackPawn) {
+            raise(
+              IllegalMove(
+                sq1,
+                sq2,
+                "Invalid En Passant. No black pawn to capture.",
+              ),
+            );
+          } else {
+            position
+            |> X.setPiece(targetSquare, NoPiece)
+            |> X.setPiece(sq1, NoPiece)
+            |> X.setPiece(sq2, WhitePawn);
+          };
+        } else if (p1 == BlackPawn && r1 == 3 && r2 == 2) {
+          let targetSquare = X.rankUpExn(sq2);
+          let targetPiece = X.getPiece(targetSquare, position);
+          if (targetPiece != WhitePawn) {
+            raise(
+              IllegalMove(
+                sq1,
+                sq2,
+                "Invalid En Passant. No white pawn to capture.",
+              ),
+            );
+          } else {
+            position
+            |> X.setPiece(targetSquare, NoPiece)
+            |> X.setPiece(sq1, NoPiece)
+            |> X.setPiece(sq2, BlackPawn);
+          };
+        } else {
+          raise(IllegalMove(sq1, sq2, "Invalid En Passant."));
+        }
+      /* TODO: Check castling. */
+      | (WhiteKing, _, _) => position
+      | (BlackKing, _, _) => position
+      | _ => position |> X.setPiece(sq1, NoPiece) |> X.setPiece(sq2, p1)
+      };
+    next;
+  };
+
+  let forSquare = (square, position: fullPosition): list(square) => {
+    let firstPass = forSquareFirstPass(square, position.p);
+    let _ = firstPass;
+    /* Filter out any moves that result in check. */
+    [];
   };
 };
 
@@ -977,14 +1180,145 @@ module TimedMove = {
   let getMove = move => move.move;
 };
 
-module Position = {
-  type t = position;
+/*
+ * Some private utils needed to work with positions.
+ */
+module PositionUtils = {
+  let build = (p: position): fullPosition => {
+    let derived = {
+      whiteThreats: Moves.getThreats(White, p),
+      blackThreats: Moves.getThreats(Black, p),
+    };
+    {p, derived};
+  };
+};
 
-  let make = () => Const.startPosition;
+module ConstPositions = {
+  let empty: position = {
+    a1: NoPiece,
+    a2: NoPiece,
+    a3: NoPiece,
+    a4: NoPiece,
+    a5: NoPiece,
+    a6: NoPiece,
+    a7: NoPiece,
+    a8: NoPiece,
+    b1: NoPiece,
+    b2: NoPiece,
+    b3: NoPiece,
+    b4: NoPiece,
+    b5: NoPiece,
+    b6: NoPiece,
+    b7: NoPiece,
+    b8: NoPiece,
+    c1: NoPiece,
+    c2: NoPiece,
+    c3: NoPiece,
+    c4: NoPiece,
+    c5: NoPiece,
+    c6: NoPiece,
+    c7: NoPiece,
+    c8: NoPiece,
+    d1: NoPiece,
+    d2: NoPiece,
+    d3: NoPiece,
+    d4: NoPiece,
+    d5: NoPiece,
+    d6: NoPiece,
+    d7: NoPiece,
+    d8: NoPiece,
+    e1: NoPiece,
+    e2: NoPiece,
+    e3: NoPiece,
+    e4: NoPiece,
+    e5: NoPiece,
+    e6: NoPiece,
+    e7: NoPiece,
+    e8: NoPiece,
+    f1: NoPiece,
+    f2: NoPiece,
+    f3: NoPiece,
+    f4: NoPiece,
+    f5: NoPiece,
+    f6: NoPiece,
+    f7: NoPiece,
+    f8: NoPiece,
+    g1: NoPiece,
+    g2: NoPiece,
+    g3: NoPiece,
+    g4: NoPiece,
+    g5: NoPiece,
+    g6: NoPiece,
+    g7: NoPiece,
+    g8: NoPiece,
+    h1: NoPiece,
+    h2: NoPiece,
+    h3: NoPiece,
+    h4: NoPiece,
+    h5: NoPiece,
+    h6: NoPiece,
+    h7: NoPiece,
+    h8: NoPiece,
+    active: White,
+    enPassant: None,
+    whiteRights: [],
+    blackRights: [],
+    halfmoveClock: 0,
+    moveCount: 1,
+  };
+
+  let start: position = {
+    ...empty,
+    a1: WhiteRook,
+    b1: WhiteKnight,
+    c1: WhiteBishop,
+    d1: WhiteQueen,
+    e1: WhiteKing,
+    f1: WhiteBishop,
+    g1: WhiteKnight,
+    h1: WhiteRook,
+    a2: WhitePawn,
+    b2: WhitePawn,
+    c2: WhitePawn,
+    d2: WhitePawn,
+    e2: WhitePawn,
+    f2: WhitePawn,
+    g2: WhitePawn,
+    h2: WhitePawn,
+    a7: BlackPawn,
+    b7: BlackPawn,
+    c7: BlackPawn,
+    d7: BlackPawn,
+    e7: BlackPawn,
+    f7: BlackPawn,
+    g7: BlackPawn,
+    h7: BlackPawn,
+    a8: BlackRook,
+    b8: BlackKnight,
+    c8: BlackBishop,
+    d8: BlackQueen,
+    e8: BlackKing,
+    f8: BlackBishop,
+    g8: BlackKnight,
+    h8: BlackRook,
+    whiteRights: [A1, H1],
+    blackRights: [A8, H8],
+  };
+};
+
+module Position = {
+  type t = fullPosition;
+
+  module Full = {
+    let empty = PositionUtils.build(ConstPositions.empty);
+    let start = PositionUtils.build(ConstPositions.start);
+  };
+
+  let make = () => Full.start;
   /* TODO: Implement. */
   let applyMove = (move, position) => position;
-  let getPlayer = position => position.active;
-  let getPiece = (square, position) => X.getPiece(square, position);
+  let getPlayer = position => position.p.active;
+  let getPiece = (square, position) => X.getPiece(square, position.p);
   /* TODO: Implement. */
   let getLegalMoves = (square, position) => [];
   /* TODO: Implement. */
@@ -993,7 +1327,7 @@ module Position = {
   let getCheckMate = position => None;
   /* TODO: Implement. */
   let isInsufficientMaterial = position => false;
-  let getHalfmoveClock = position => position.halfmoveClock;
+  let getHalfmoveClock = position => position.p.halfmoveClock;
 };
 
 module Game = {
@@ -1001,7 +1335,7 @@ module Game = {
 
   let make = () => ();
   let withTiming = (timing, game) => game;
-  let getPosition = game => Const.emptyPosition;
+  let getPosition = game => Position.Full.start;
   let getPrevious = game => None;
   let getHistory = game => [];
   let applyMove = (move, game) => game;

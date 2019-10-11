@@ -33,3 +33,21 @@ let contains = (~equals=(==), el, list) =>
 
 let containsLazy = (~equals=(==), el, getList) =>
   List.exists(test => equals(el, test), getList());
+
+let dropAfter = (~noneAllowed, ~oneAllowed, list) => {
+  let drop = ref(false);
+  let result = ref([]);
+  List.iter(
+    el =>
+      if (!drop.contents) {
+        if (noneAllowed(el)) {
+          drop := true;
+        } else if (oneAllowed(el)) {
+          drop := true;
+          result := [el, ...result.contents];
+        };
+      },
+    list,
+  );
+  result.contents |> List.rev;
+};
