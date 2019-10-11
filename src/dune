@@ -10,6 +10,7 @@
 (executable
   (package AppExe)
   (name AppExe)
+  (js_of_ocaml (javascript_files stubs.js))
   (public_name AppExe)
   (libraries
     App

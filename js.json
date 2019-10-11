@@ -4,8 +4,11 @@
       "run": "esy '@js' x bash -c 'http-server #{self.bin}'"
   },
   "override": {
-      "build": ["dune build -p AppJs -j4"],
+      "build": [
+        "dune build --root . -j4 --profile release"
+      ],
       "install": [
+          "esy-installer AppExe.install",
           "esy-installer AppJs.install"
       ],
       "dependencies": {

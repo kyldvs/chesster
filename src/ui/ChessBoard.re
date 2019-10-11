@@ -254,7 +254,7 @@ module Square = {
         left(22),
         height(0),
         width(0),
-        borderRadius(10.),
+        //borderRadius(10.),
         border(~color=accent, ~width=10),
       ];
 
