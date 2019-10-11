@@ -17,4 +17,10 @@
   )
   (modules AppExe)
 )
+
+(install
+    (section bin)
+    (package AppJs)
+    (files AppExe.bc.js))
+
 (include_subdirs unqualified)
