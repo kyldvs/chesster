@@ -6,7 +6,10 @@
   "esy": {
     "build": "refmterr dune build -p AppExe",
     "buildsInSource": "_build",
-    "buildEnv": { "ODOC_SYNTAX": "re" }
+    "buildEnv": { "ODOC_SYNTAX": "re" },
+    "install": [
+      "esy-installer App.install"
+    ]
   },
   "revery-packager": {
     "bundleName": "ExampleApp",
