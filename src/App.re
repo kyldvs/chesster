@@ -1,4 +1,6 @@
 let init = app => {
+  let _ = Revery.Log.listen((_, msg) => print_endline("LOG: " ++ msg));
+
   let win = Revery.App.createWindow(app, "Chesster");
 
   if (Revery.Environment.webGL) {

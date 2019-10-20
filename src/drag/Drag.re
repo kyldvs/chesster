@@ -56,7 +56,7 @@ let startDragging = (view, onStopFn) => {
 
 let init = () => {
   ();
-  print_endline("Drag::init: Initialized");
+  Revery.Log.info("Drag::init", "initialized");
   if (!didInit.contents) {
     didInit := true;
     id := 1;
