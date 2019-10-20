@@ -1062,6 +1062,9 @@ module Moves = {
     let (r2, f2) = X.squareToRankAndFile(sq2);
     let p1 = X.getPiece(sq1, position);
     let p2 = X.getPiece(sq2, position);
+    let normalMove = () => {
+      position |> X.setPiece(sq1, NoPiece) |> X.setPiece(sq2, p1);
+    };
     let next =
       switch (p1, p2, position.enPassant) {
       /* Check en-passant. */
@@ -1103,10 +1106,27 @@ module Moves = {
         } else {
           raise(IllegalMove(sq1, sq2, "Invalid En Passant."));
         }
-      /* TODO: Check castling. */
-      | (WhiteKing, _, _) => position
-      | (BlackKing, _, _) => position
-      | _ => position |> X.setPiece(sq1, NoPiece) |> X.setPiece(sq2, p1)
+      /*
+       * Check castling. Castle moves are encoded with:
+       *
+       * - Moving king onto rook
+       * - Moving king 2 or more squares left/right
+       */
+      | (WhiteKing, _, _) =>
+        if (r1 === 0 && f1 === 4) {
+          /* Check for castle attempt. */
+          position;
+        } else {
+          normalMove();
+        }
+      | (BlackKing, _, _) =>
+        if (r1 === 7 && f1 === 4) {
+          /* Check for castle attempt. */
+          position;
+        } else {
+          normalMove();
+        }
+      | _ => normalMove()
       };
     next;
   };
