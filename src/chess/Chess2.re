@@ -106,6 +106,7 @@ module Types = {
     | H8;
 
   exception IllegalMove(square, square, string);
+  exception UnexpectedPosition(string);
 };
 
 open Types;
@@ -831,6 +832,23 @@ module X = {
     };
     Utils.dropAfter(~noneAllowed, ~oneAllowed, seq);
   };
+
+  let getOpp = player => {
+    switch (player) {
+    | White => Black
+    | Black => White
+    };
+  };
+
+  let togglePlayer = position =>
+    setActive(getOpp(position.active), position);
+
+  let playerToString = player => {
+    switch (player) {
+    | White => "White"
+    | Black => "Black"
+    };
+  };
 };
 
 module Moves = {
@@ -1015,7 +1033,8 @@ module Moves = {
    * Includes all valid moves except for:
    *
    * - Castling.
-   * - Moves that are illegal due to check.
+   *
+   * Note: This also include invalid moves that are not legal due to pins.
    */
   let forSquareFirstPass = (square, position): list(square) => {
     let piece = X.getPiece(square, position);
@@ -1054,6 +1073,41 @@ module Moves = {
     |> SquareSet.of_list;
   };
 
+  let inCheck = (player, position) => {
+    let opp = X.getOpp(player);
+    let threats = getThreats(opp, position);
+    let myKing =
+      position
+      |> X.getAllPieces
+      |> List.filter(((sq, piece)) => {
+           switch (player, piece) {
+           | (White, WhiteKing) => true
+           | (Black, BlackKing) => true
+           | _ => false
+           }
+         })
+      |> List.map(((sq, _)) => sq);
+
+    let myKing =
+      switch (myKing) {
+      | [sq] => sq
+      | [] =>
+        raise(
+          UnexpectedPosition(
+            "Could not find king for " ++ X.playerToString(player),
+          ),
+        )
+      | _ =>
+        raise(
+          UnexpectedPosition(
+            "Found multiple kings for " ++ X.playerToString(player),
+          ),
+        )
+      };
+
+    SquareSet.mem(myKing, threats);
+  };
+
   /*
    * Gets the next position. Assumes move is valid (but not necessarily legal.)
    */
@@ -1062,9 +1116,51 @@ module Moves = {
     let (r2, f2) = X.squareToRankAndFile(sq2);
     let p1 = X.getPiece(sq1, position);
     let p2 = X.getPiece(sq2, position);
+
+    /*
+     * The standard way to apply a move.
+     */
     let normalMove = () => {
-      position |> X.setPiece(sq1, NoPiece) |> X.setPiece(sq2, p1);
+      let position =
+        position |> X.setPiece(sq1, NoPiece) |> X.setPiece(sq2, p1);
+      position;
     };
+
+    /*
+     * Always update these rights.
+     */
+    let updateRights = position => {
+      /* Update castling rights. */
+      let position =
+        switch (p1, sq1) {
+        | (WhiteRook, A1) => X.revokeWhiteRights(A1, position)
+        | (WhiteRook, H1) => X.revokeWhiteRights(H1, position)
+        | (BlackRook, A8) => X.revokeBlackRights(A8, position)
+        | (BlackRook, H8) => X.revokeBlackRights(H8, position)
+        | (WhiteKing, _) => X.revokeAllWhiteRights(position)
+        | (BlackKing, _) => X.revokeAllBlackRights(position)
+        | _ => position
+        };
+
+      /* Update en-passant square. */
+      let position =
+        switch (p1, r1, r2) {
+        | (WhitePawn, 1, 3) =>
+          X.setEnPassant(Some(X.rankAndFileToSquare((2, f1))), position)
+        | (BlackPawn, 6, 4) =>
+          X.setEnPassant(Some(X.rankAndFileToSquare((5, f1))), position)
+        | _ => X.setEnPassant(None, position)
+        };
+
+      position;
+    };
+
+    /*
+     * Here we are not trying to validate En Passant or Castling to check if
+     * they are legal. Rather we need to verify that is the kind of move that
+     * is happening because it updates the board state in a non standard
+     * manner. Something else should verify if it is a valid move.
+     */
     let next =
       switch (p1, p2, position.enPassant) {
       /* Check en-passant. */
@@ -1110,32 +1206,124 @@ module Moves = {
        * Check castling. Castle moves are encoded with:
        *
        * - Moving king onto rook
-       * - Moving king 2 or more squares left/right
+       * - Moving king 2 squares left/right
        */
       | (WhiteKing, _, _) =>
-        if (r1 === 0 && f1 === 4) {
-          /* Check for castle attempt. */
-          position;
+        /* Check for castle attempt. */
+        if (r1 === 0
+            && f1 === 4
+            && r2 === 0
+            && f2 !== 1
+            && f2 !== 3
+            && f2 !== 4
+            && f2 !== 5) {
+          if (f2 < f1) {
+            /* Castle queen-side */
+            if (List.exists(el => el == A1, position.whiteRights)) {
+              position
+              |> X.setPiece(A1, NoPiece)
+              |> X.setPiece(B1, NoPiece)
+              |> X.setPiece(C1, WhiteKing)
+              |> X.setPiece(D1, WhiteRook)
+              |> X.setPiece(E1, NoPiece)
+              |> X.revokeAllWhiteRights;
+            } else {
+              raise(
+                IllegalMove(
+                  sq1,
+                  sq2,
+                  "Invalid castle. White does not have Queen-side castling rights.",
+                ),
+              );
+            };
+          } else if
+            /* Castle king-side */
+            (List.exists(el => el == A8, position.whiteRights)) {
+            position
+            |> X.setPiece(E1, NoPiece)
+            |> X.setPiece(F1, WhiteRook)
+            |> X.setPiece(G1, WhiteKing)
+            |> X.setPiece(H1, NoPiece)
+            |> X.revokeAllWhiteRights;
+          } else {
+            raise(
+              IllegalMove(
+                sq1,
+                sq2,
+                "Invalid castle. White does not have King-side castling rights.",
+              ),
+            );
+          };
         } else {
           normalMove();
         }
       | (BlackKing, _, _) =>
-        if (r1 === 7 && f1 === 4) {
-          /* Check for castle attempt. */
-          position;
+        if (r1 === 7
+            && f1 === 4
+            && r2 === 7
+            && f2 !== 1
+            && f2 !== 3
+            && f2 !== 4
+            && f2 !== 5) {
+          if (f2 < f1) {
+            /* Castle queen-side */
+            if (List.exists(el => el == A8, position.blackRights)) {
+              position
+              |> X.setPiece(A8, NoPiece)
+              |> X.setPiece(B8, NoPiece)
+              |> X.setPiece(C8, WhiteKing)
+              |> X.setPiece(D8, WhiteRook)
+              |> X.setPiece(E8, NoPiece)
+              |> X.revokeAllBlackRights;
+            } else {
+              raise(
+                IllegalMove(
+                  sq1,
+                  sq2,
+                  "Invalid castle. Black does not have Queen-side castling rights.",
+                ),
+              );
+            };
+          } else if
+            /* Castle king-side */
+            (List.exists(el => el == A8, position.blackRights)) {
+            position
+            |> X.setPiece(E8, NoPiece)
+            |> X.setPiece(F8, WhiteRook)
+            |> X.setPiece(G8, WhiteKing)
+            |> X.setPiece(H8, NoPiece)
+            |> X.revokeAllBlackRights;
+          } else {
+            raise(
+              IllegalMove(
+                sq1,
+                sq2,
+                "Invalid castle. Black does not have King-side castling rights.",
+              ),
+            );
+          };
         } else {
           normalMove();
         }
       | _ => normalMove()
       };
-    next;
+
+    /* Make sure castling and En Passant rights are updated. */
+    next |> updateRights |> X.togglePlayer;
   };
 
   let forSquare = (square, position: fullPosition): list(square) => {
     let firstPass = forSquareFirstPass(square, position.p);
-    let _ = firstPass;
-    /* Filter out any moves that result in check. */
-    [];
+    let withoutInvalid =
+      firstPass
+      |> List.map(sq2 => {
+           (square, sq2, nextPosition(square, sq2, position.p))
+         })
+      |> List.filter(((sq1, sq2, position)) => {
+           !inCheck(X.getOpp(position.active), position)
+         })
+      |> List.map(((_, sq2, _)) => sq2);
+    withoutInvalid;
   };
 };
 
