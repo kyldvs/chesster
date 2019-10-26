@@ -15,7 +15,7 @@ describe("Tests output", ({test}) => {
   });
 
   test("1. e4", ({expect}) => {
-    let p = Position.make() |> Position.applyMove(Move.make(B4, E4));
+    let p = Position.make() |> Position.applyMove(Move.make(E2, E4));
 
     let actual = FEN.fromPosition(p);
 
@@ -27,7 +27,7 @@ describe("Tests output", ({test}) => {
   test("1. e4 c5", ({expect}) => {
     let p =
       Position.make()
-      |> Position.applyMove(Move.make(B4, E4))
+      |> Position.applyMove(Move.make(E2, E4))
       |> Position.applyMove(Move.make(C7, C5));
 
     let actual = FEN.fromPosition(p);
@@ -40,7 +40,7 @@ describe("Tests output", ({test}) => {
   test("1. e4 c5 2. Nf3", ({expect}) => {
     let p =
       Position.make()
-      |> Position.applyMove(Move.make(B4, E4))
+      |> Position.applyMove(Move.make(E2, E4))
       |> Position.applyMove(Move.make(C7, C5))
       |> Position.applyMove(Move.make(G1, F3));
 

@@ -797,6 +797,24 @@ module X = {
     };
   };
 
+  let pieceToPlayer = piece =>
+    if (isWhitePiece(piece)) {
+      Some(White);
+    } else if (isBlackPiece(piece)) {
+      Some(Black);
+    } else {
+      None;
+    };
+
+  let pieceToPlayerExn = piece =>
+    if (isWhitePiece(piece)) {
+      White;
+    } else if (isBlackPiece(piece)) {
+      Black;
+    } else {
+      failwith("NoPiece does not have a player");
+    };
+
   let notMe = player => {
     switch (player) {
     | White => isBlackOrNoPiece
@@ -849,6 +867,16 @@ module X = {
     | Black => "Black"
     };
   };
+
+  let countMove = p =>
+    switch (p.active) {
+    | White => p
+    | Black => {...p, moveCount: p.moveCount + 1}
+    };
+
+  let resetHalfMove = p => {...p, halfmoveClock: 0};
+
+  let incrementHalfMove = p => {...p, halfmoveClock: p.halfmoveClock + 1};
 };
 
 module Moves = {
@@ -1117,6 +1145,17 @@ module Moves = {
     let p1 = X.getPiece(sq1, position);
     let p2 = X.getPiece(sq2, position);
 
+    let countHalfMove = p =>
+      if (p1 == WhitePawn || p1 == BlackPawn) {
+        X.resetHalfMove(p);
+      } else if (p1 != NoPiece
+                 && p2 != NoPiece
+                 && X.pieceToPlayerExn(p1) != X.pieceToPlayerExn(p2)) {
+        X.resetHalfMove(p);
+      } else {
+        X.incrementHalfMove(p);
+      };
+
     /*
      * The standard way to apply a move.
      */
@@ -1308,8 +1347,7 @@ module Moves = {
       | _ => normalMove()
       };
 
-    /* Make sure castling and En Passant rights are updated. */
-    next |> updateRights |> X.togglePlayer;
+    next |> updateRights |> X.countMove |> countHalfMove |> X.togglePlayer;
   };
 
   let forSquare = (square, position: fullPosition): list(square) => {
@@ -1523,8 +1561,13 @@ module Position = {
   };
 
   let make = () => Full.start;
-  /* TODO: Implement. */
-  let applyMove = (move, position) => position;
+  let applyMove = (move, position) => {
+    let sq1 = move.start;
+    let sq2 = move.stop;
+    let p = Moves.nextPosition(sq1, sq2, position.p);
+    PositionUtils.build(p);
+  };
+
   let getPlayer = position => position.p.active;
   let getPiece = (square, position) => X.getPiece(square, position.p);
   /* TODO: Implement. */
