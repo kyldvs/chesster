@@ -318,7 +318,11 @@ module Debug: {
  *
  * - https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
  */
-module FEN: {};
+module FEN: {
+  let toPosition: string => option(Position.t);
+  let toPositionExn: string => Position.t;
+  let fromPosition: Position.t => string;
+};
 
 /**
  * Portable Game Notation is used to describe a game.

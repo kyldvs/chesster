@@ -1509,8 +1509,8 @@ module ConstPositions = {
     f8: BlackBishop,
     g8: BlackKnight,
     h8: BlackRook,
-    whiteRights: [A1, H1],
-    blackRights: [A8, H8],
+    whiteRights: [H1, A1],
+    blackRights: [H8, A8],
   };
 };
 
@@ -1558,5 +1558,132 @@ module Debug = {
   let showSquares = X.squaresToString;
 };
 
-module FEN = {};
+module FEN = {
+  type rankEntry =
+    | NoPieceSeq(int)
+    | Piece(piece);
+
+  let pieceToChar = p => {
+    switch (p) {
+    | NoPiece => ""
+    | BlackPawn => "p"
+    | BlackKnight => "n"
+    | BlackBishop => "b"
+    | BlackRook => "r"
+    | BlackQueen => "q"
+    | BlackKing => "k"
+    | WhitePawn => "P"
+    | WhiteKnight => "N"
+    | WhiteBishop => "B"
+    | WhiteRook => "R"
+    | WhiteQueen => "Q"
+    | WhiteKing => "K"
+    };
+  };
+
+  let rankEntryToString = re => {
+    switch (re) {
+    | NoPieceSeq(x) => string_of_int(x)
+    | Piece(piece) => pieceToChar(piece)
+    };
+  };
+
+  let isEmptySequence = s => {
+    switch (s) {
+    | "1" => Some(1)
+    | "2" => Some(2)
+    | "3" => Some(3)
+    | "4" => Some(4)
+    | "5" => Some(5)
+    | "6" => Some(6)
+    | "7" => Some(7)
+    | "8" => Some(8)
+    | _ => None
+    };
+  };
+
+  let pieceFromChar = s => {
+    switch (s) {
+    | "p" => BlackPawn
+    | "n" => BlackKnight
+    | "b" => BlackBishop
+    | "r" => BlackRook
+    | "q" => BlackQueen
+    | "k" => BlackKing
+    | "P" => WhitePawn
+    | "N" => WhiteKnight
+    | "B" => WhiteBishop
+    | "R" => WhiteRook
+    | "Q" => WhiteQueen
+    | "K" => WhiteKing
+    | s => raise(Invalid_argument("Invalid piece: " ++ s))
+    };
+  };
+
+  let rankToString = (r, p) => {
+    let result = ref([]);
+    for (f in 0 to 7) {
+      let square = X.rankAndFileToSquare((r, f));
+      let piece = Position.getPiece(square, p);
+      switch (piece) {
+      | NoPiece =>
+        result.contents = (
+          switch (result.contents) {
+          | [NoPieceSeq(x), ...rest] => [NoPieceSeq(x + 1), ...rest]
+          | rest => [NoPieceSeq(1), ...rest]
+          }
+        )
+      | piece => result.contents = [Piece(piece), ...result.contents]
+      };
+    };
+    result.contents
+    |> List.rev
+    |> List.map(rankEntryToString)
+    |> String.concat("");
+  };
+
+  let rightsToString = sq => {
+    switch (sq) {
+    | A1 => "Q"
+    | H1 => "K"
+    | A8 => "q"
+    | H8 => "k"
+    | _ => ""
+    };
+  };
+
+  let fromPosition = p => {
+    let ranks = [7, 6, 5, 4, 3, 2, 1, 0];
+    let rankStrings = List.map(r => rankToString(r, p), ranks);
+    let board = String.concat("/", rankStrings);
+    let active =
+      switch (p.p.active) {
+      | White => "w"
+      | Black => "b"
+      };
+    let whiteRights =
+      p.p.whiteRights |> List.map(rightsToString) |> String.concat("");
+    let blackRights =
+      p.p.blackRights |> List.map(rightsToString) |> String.concat("");
+    let rights = whiteRights ++ blackRights;
+    let rights = rights == "" ? "-" : rights;
+    let enPassant =
+      switch (p.p.enPassant) {
+      | Some(sq) => sq |> X.squareToString |> String.lowercase_ascii
+      | None => "-"
+      };
+    let halfmoveClock = string_of_int(p.p.halfmoveClock);
+    let moveNumber = string_of_int(p.p.moveCount);
+    let parts = [board, active, rights, enPassant, halfmoveClock, moveNumber];
+    String.concat(" ", parts);
+  };
+
+  let toPositionExn = s => Position.make();
+
+  let toPosition = s =>
+    try(Some(toPositionExn(s))) {
+    | _ => None
+    };
+};
+
 module PGN = {};
