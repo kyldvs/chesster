@@ -27,7 +27,7 @@
     "@opam/dune": "1.7.3",
     "@reason-native/rely": "^3.1.0",
     "ocaml": "~4.7.0",
-    "revery": "github:revery-ui/revery#8554e17"
+    "revery": "github:revery-ui/revery#4a37510"
   },
   "resolutions": {
     "@opam/cmdliner": "1.0.2",
