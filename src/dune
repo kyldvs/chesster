@@ -18,6 +18,7 @@
     App
     Revery
   )
+  (preprocess (pps brisk-reconciler.ppx))
   (modules AppExe)
 )
 

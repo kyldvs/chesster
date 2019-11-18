@@ -1,14 +1,14 @@
 {
-  "checksum": "164fe03cb2912baa48a6a5c369134c67",
+  "checksum": "e90aabe7668b204aefce662bc6bd6139",
   "root": "chesster@link-dev:./package.json",
   "node": {
-    "revery@github:revery-ui/revery#4a37510@d41d8cd9": {
-      "id": "revery@github:revery-ui/revery#4a37510@d41d8cd9",
+    "revery@github:revery-ui/revery#5531c9d@d41d8cd9": {
+      "id": "revery@github:revery-ui/revery#5531c9d@d41d8cd9",
       "name": "revery",
-      "version": "github:revery-ui/revery#4a37510",
+      "version": "github:revery-ui/revery#5531c9d",
       "source": {
         "type": "install",
-        "source": [ "github:revery-ui/revery#4a37510" ]
+        "source": [ "github:revery-ui/revery#5531c9d" ]
       },
       "overrides": [],
       "dependencies": [
@@ -18,14 +18,14 @@
         "reason-gl-matrix@0.9.9305@d41d8cd9",
         "reason-fontkit@2.7.0@d41d8cd9",
         "reason-font-manager@2.0.1@d41d8cd9", "flex@1.2.2@d41d8cd9",
-        "brisk-reconciler@0.0.2@d41d8cd9",
         "@reason-native/rely@3.1.0@d41d8cd9",
         "@reason-native/console@0.0.3@d41d8cd9",
         "@opam/lwt_ppx@opam:1.2.2@ee59a0be", "@opam/lwt@opam:4.4.0@0357bb8b",
         "@opam/js_of_ocaml-lwt@opam:3.4.0@70e6f3e4",
         "@opam/js_of_ocaml-compiler@opam:3.4.0@99dd4c68",
         "@opam/js_of_ocaml@opam:3.4.0@d8a98a2c",
-        "@esy-ocaml/reason@3.5.2@d41d8cd9"
+        "@esy-ocaml/reason@3.5.2@d41d8cd9",
+        "@brisk/brisk-reconciler@github:briskml/brisk-reconciler#0a2e476@d41d8cd9"
       ],
       "devDependencies": []
     },
@@ -319,7 +319,7 @@
       },
       "overrides": [],
       "dependencies": [
-        "revery@github:revery-ui/revery#4a37510@d41d8cd9",
+        "revery@github:revery-ui/revery#5531c9d@d41d8cd9",
         "ocaml@4.7.1004@d41d8cd9", "@reason-native/rely@3.1.0@d41d8cd9",
         "@opam/dune@opam:1.7.3@e23fe0a7",
         "@brisk/brisk-reconciler@github:briskml/brisk-reconciler#0a2e476@d41d8cd9"
@@ -328,23 +328,6 @@
         "ocaml@4.7.1004@d41d8cd9", "esy-macdylibbundler@0.4.5@d41d8cd9",
         "@opam/merlin@opam:3.2.2@e3edecdd"
       ]
-    },
-    "brisk-reconciler@0.0.2@d41d8cd9": {
-      "id": "brisk-reconciler@0.0.2@d41d8cd9",
-      "name": "brisk-reconciler",
-      "version": "0.0.2",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://registry.npmjs.org/brisk-reconciler/-/brisk-reconciler-0.0.2.tgz#sha1:5bfafbb49176516156e19b8d8be7faf2deb1d39e"
-        ]
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@4.7.1004@d41d8cd9", "@opam/dune@opam:1.7.3@e23fe0a7",
-        "@esy-ocaml/reason@3.5.2@d41d8cd9"
-      ],
-      "devDependencies": []
     },
     "@reason-native/rely@3.1.0@d41d8cd9": {
       "id": "@reason-native/rely@3.1.0@d41d8cd9",

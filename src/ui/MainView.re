@@ -22,9 +22,10 @@ let containerStyle =
     right(0),
   ];
 
-let innerStyle = Style.[maxHeight(50), flexDirection(`Row), alignItems(`FlexEnd)];
+let innerStyle =
+  Style.[maxHeight(50), flexDirection(`Row), alignItems(`FlexEnd)];
 
-let createElement = (~children: list(unit), _) => {
+let make = _ => {
   let element =
     <View style=containerStyle>
       <View style=innerStyle>

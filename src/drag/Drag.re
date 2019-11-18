@@ -8,7 +8,7 @@ let mouseX = ref(0.);
 let mouseY = ref(0.);
 let didInit = ref(false);
 let dispatch: ref(option(int => unit)) = ref(None);
-let current: ref(option(React.syntheticElement)) = ref(None);
+let current: ref(option(React.element('a))) = ref(None);
 let onStop: ref(option(unit => unit)) = ref(None);
 
 let refresh = () => {
@@ -68,40 +68,35 @@ let init = () => {
 };
 
 module Render = {
-  let component = React.component("DragRender");
-
   let initialState = 0;
   let reducer = (action, _) => action;
 
-  let createElement = (~children, _) => {
-    component(hooks => {
-      let (state, dispatch, hooks) =
-        Hooks.reducer(~initialState, reducer, hooks);
+  let%component make = () => {
+    let%hook (state, dispatch) = Hooks.reducer(~initialState, reducer);
 
-      registerDispatch(dispatch);
+    registerDispatch(dispatch);
 
-      let xRounded = int_of_float(mouseX.contents) - 1;
-      let yRounded = int_of_float(mouseY.contents) - 1;
+    let xRounded = int_of_float(mouseX.contents) - 1;
+    let yRounded = int_of_float(mouseY.contents) - 1;
 
-      let cursorStyle =
-        Style.[position(`Absolute), top(yRounded), left(xRounded)];
+    let cursorStyle =
+      Style.[position(`Absolute), top(yRounded), left(xRounded)];
 
-      let cursor =
-        switch (current.contents) {
-        | Some(current) => [current]
-        | None => []
-        };
+    let cursor =
+      switch (current.contents) {
+      | Some(current) => current
+      | None => React.empty
+      };
 
-      /*
-       * Wrap in Container with no area to prevent the item being dragged
-       * from stealing mouse enter/exit events.
-       */
-      let element =
-        <View style=cursorStyle>
-          <Container width=0 height=0> ...cursor </Container>
-        </View>;
+    /*
+     * Wrap in Container with no area to prevent the item being dragged
+     * from stealing mouse enter/exit events.
+     */
+    let element =
+      <View style=cursorStyle>
+        <Container width=0 height=0> cursor </Container>
+      </View>;
 
-      (hooks, element);
-    });
+    element;
   };
 };

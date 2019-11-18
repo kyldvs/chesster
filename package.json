@@ -43,7 +43,7 @@
     "@opam/dune": "1.7.3",
     "@reason-native/rely": "^3.1.0",
     "ocaml": "~4.7.0",
-    "revery": "github:revery-ui/revery#4a37510"
+    "revery": "github:revery-ui/revery#5531c9d"
   },
   "resolutions": {
     "rebez": "github:jchavarri/rebez#03fa3b7"
