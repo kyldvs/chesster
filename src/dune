@@ -5,6 +5,7 @@
     bigarray
     Revery
   )
+  (preprocess (pps brisk-reconciler.ppx))
   (modules :standard \ AppExe)
 )
 
